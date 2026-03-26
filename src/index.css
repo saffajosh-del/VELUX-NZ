@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+@theme {
+  /* Warm Luxury Palette based on Stone/Warm Grey */
+  --color-background: #FAF9F5;
+  --color-foreground: #44403C;
+
+  --color-card: #FFFFFF;
+  --color-card-foreground: #44403C;
+
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #44403C;
+
+  --color-primary: #DA251D;
+  /* Velux Red */
+  --color-primary-foreground: #FFFFFF;
+
+  --color-secondary: #5C6268;
+  /* Velux Dark Greyish */
+  --color-secondary-foreground: #FFFFFF;
+
+  --color-muted: #EBEAE5;
+  --color-muted-foreground: #737373;
+
+  --color-accent: #EBEAE5;
+  --color-accent-foreground: #44403C;
+
+  --color-destructive: #EF4444;
+  --color-destructive-foreground: #FAFAFA;
+
+  --color-border: #E5E4E0;
+  --color-input: #E5E4E0;
+  --color-ring: #3F3C38;
+
+  --radius-lg: 1rem;
+  --radius-md: calc(1rem - 2px);
+  --radius-sm: calc(1rem - 4px);
+}
+
+/* Custom Utilities for Shadcn */
+:root {
+  --background: 44 24% 96%;
+  --foreground: 30 6% 25%;
+  --card: 0 0% 100%;
+  --card-foreground: 30 6% 25%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 30 6% 25%;
+  --primary: 0 74% 48%;
+  /* Velux Red HSL approx */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 6% 38%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 40 15% 92%;
+  --muted-foreground: 30 3% 45%;
+  --accent: 40 15% 92%;
+  --accent-foreground: 30 6% 25%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 30 6% 90%;
+  --input: 30 6% 90%;
+  --ring: 30 5% 20%;
+  --radius: 1rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased font-sans;
+  }
+}

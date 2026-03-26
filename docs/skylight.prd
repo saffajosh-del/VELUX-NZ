@@ -1,0 +1,306 @@
+# Skylight Selector – Product Requirements Document (PRD)
+
+## 1. Product Overview
+
+**Product Name:** Skylight Selector
+
+**Purpose:**
+A guided, mistake-proof skylight selection tool that allows non-technical staff to confidently identify valid skylight configurations for customers by progressively narrowing options based on constraints.
+
+The system must prevent invalid combinations by design and feel premium, calm, and effortless to use.
+
+**Primary Outcome:**
+At the end of the flow, the staff member can:
+
+* See **only valid skylight options**
+* Export or copy a **clear product recommendation summary**
+* Avoid any technical skylight knowledge
+
+---
+
+## 2. Target Users
+
+### Primary User
+
+* Internal sales / admin staff
+* No skylight or building knowledge
+* Needs certainty and speed
+
+### Secondary User
+
+* Manager / installer reviewing outputs
+
+---
+
+## 3. Core Design Principles
+
+1. **Progressive Disclosure** – One decision per screen
+2. **No Dead Ends** – User can never select an invalid option
+3. **Always Explain Why** – Gentle guidance, not rules
+4. **Luxury Feel** – Calm spacing, soft motion, neutral palette
+5. **Mobile-First** – Works perfectly on iPad / phone
+
+---
+
+## 4. Data Model (Source: data.md)
+
+The selector relies on a structured dataset defining:
+
+* Skylight types
+* Size codes
+* Dimensions
+* Compatible openings
+* Compatible blinds
+* Compatible flashings
+* Orientation constraints
+* Roof type constraints
+
+**Key Rule:**
+The UI never shows raw data — it only consumes filtered results.
+
+---
+
+## 5. User Flow (High Level)
+
+1. Start New Selection
+2. Identify Roof Type
+3. Identify Installation Type
+4. Select Opening Type
+5. Select Size Constraints
+6. Filter Valid Products
+7. Optional Add-ons
+8. Summary & Export
+
+---
+
+## 6. Step-by-Step Flow
+
+### Step 1: Roof Type
+
+**Question:** What type of roof does the client have?
+
+**Options:**
+
+* Tiled roof
+* Corrugated metal roof
+* Wide-span metal roof (Trimdek / Klip-Lok)
+* Flat roof
+
+**Logic:**
+
+* Filters flashing compatibility
+* Flat roof immediately routes to FCM-only flow
+
+---
+
+### Step 2: Installation Type
+
+**Question:** Is this a new installation or a replacement?
+
+**Options:**
+
+* New installation
+* Replacement (existing skylight)
+
+**Logic:**
+
+* Replacement prompts size-matching priority
+
+---
+
+### Step 3: Opening Preference
+
+**Question:** Does the skylight need to open?
+
+**Options:**
+
+* Fixed (does not open)
+* Manual opening
+* Electric opening
+* Solar powered opening
+
+**Logic:**
+
+* Instantly removes incompatible models
+
+---
+
+### Step 4: Roof Pitch / Orientation (if applicable)
+
+**Question:** Is the skylight intended to be installed in portrait or landscape orientation?
+
+**Options:**
+
+* Portrait
+* Landscape
+* Not sure
+
+**Logic:**
+
+* Removes restricted sizes (e.g. FCM 2270 / 3072 / 4672 landscape)
+* If "Not sure", defaults to safest compatible options
+
+---
+
+### Step 5: Size Constraints
+
+**Question:** What is limiting the skylight size?
+
+**Options:**
+
+* Rafter spacing
+* Ceiling opening size
+* Flexible / customer preference
+
+**UI Pattern:**
+
+* Visual size cards
+* Only valid sizes shown
+
+---
+
+### Step 6: Product Results
+
+**Display:**
+
+* 1–3 recommended skylights (never more)
+* Best match highlighted
+
+Each card shows:
+
+* Product name
+* Size code
+* Dimensions
+* Opening type
+* Why it’s recommended
+
+---
+
+### Step 7: Optional Add-ons
+
+**Questions:**
+
+* Does the client want light control?
+* Does the client want room darkening?
+* Is insect protection required?
+
+**Logic:**
+
+* Only compatible blinds shown
+* Auto-add required accessories (e.g. ZZZ 199 trays)
+
+---
+
+### Step 8: Summary & Export
+
+**Summary Panel Includes:**
+
+* Selected skylight (highlighted)
+* Product code
+* Opening type
+* Size & dimensions
+* Compatible flashing
+* Compatible blinds
+* Auto-required accessories (included by default)
+* Explicit exclusions (what does *not* apply)
+
+**Pricing Ticket (Always Visible):**
+
+* Skylight RRP
+* Add-ons RRP (itemised)
+* Total indicative price (supply only)
+
+**Included / Not Included Clarity:**
+
+* ✅ Included with this configuration
+* ❌ Not compatible / not required
+
+**Actions:**
+
+* Copy summary
+* Export PDF
+* Save selection
+
+---
+
+## 7. UI / UX Direction
+
+### Visual Style
+
+* Background: Soft off-white / stone
+* Accent: Muted charcoal, warm grey
+* Typography: Modern sans-serif (Inter / SF Pro style)
+* Corners: Rounded (12–16px)
+* Shadows: Soft, minimal
+
+### Motion
+
+* Gentle fade + slide transitions
+* No abrupt state changes
+* Loading skeletons instead of spinners
+
+---
+
+## 8. Error Prevention Strategy
+
+* No free-text inputs where possible
+* All choices driven by filtered data
+* Disabled options instead of error messages
+* Friendly microcopy for guidance
+
+Example:
+
+> “Based on the roof type, this option isn’t recommended — we’ve hidden it for you.”
+
+---
+
+## 9. Technical Expectations
+
+### Frontend
+
+* React / Next.js
+* Tailwind CSS
+* Framer Motion
+
+### Data Layer
+
+* data.md parsed into structured JSON
+* Rule engine filters combinations
+
+### State Management
+
+* Step-based finite state machine
+* Undo / back always available
+
+---
+
+## 10. Success Metrics
+
+* Staff can complete a selection in < 2 minutes
+* Zero invalid combinations produced
+* No training required
+
+---
+
+## 11. Future Enhancements (Out of Scope)
+
+* Installer quoting
+* CRM sync
+* Public-facing selector
+* AI-assisted recommendations
+
+---
+
+## 12. Non-Goals
+
+* Teaching skylight theory
+* Showing all available products
+* Custom engineering calculations
+
+---
+
+## 13. Final Note
+
+This tool should feel like a **luxury concierge**, not a configurator.
+
+The user should never feel unsure — only guided.

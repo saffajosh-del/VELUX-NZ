@@ -897,7 +897,7 @@ export default function SkylightSelector() {
 
         // Check if blind tray is available for flat roof products
         // FCM sizes 1430, 3055, 3072, 4672 have no blind tray, so skip blinds entirely
-        if (isFlatRoof && selection.sizeCode) {
+        if (isFlatRoof && product.id === 'fcm' && selection.sizeCode) {
             const zzz199 = ACCESSORIES.find(a => a.id === 'zzz199');
             if (zzz199) {
                 const prices = zzz199.prices as unknown as Record<string, number>;
@@ -1166,7 +1166,7 @@ export default function SkylightSelector() {
         // Accessory Logic (ZZZ 199 for Flat Roof Blinds)
         let accessoryPrice = 0;
         let accessoryName = '';
-        if (isFlatRoof && blind && sizeCode) {
+        if (isFlatRoof && product?.id === 'fcm' && blind && sizeCode) {
             const zzz199 = ACCESSORIES.find(a => a.id === 'zzz199');
             if (zzz199) {
                 const prices = zzz199.prices as unknown as Record<string, number>;

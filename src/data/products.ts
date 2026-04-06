@@ -43,9 +43,7 @@ export interface Blind {
 export const PITCHED_SIZES: Size[] = [
     { code: 'C01', width: 550, height: 700, label: '550 x 700' },
     { code: 'C04', width: 550, height: 980, label: '550 x 980' },
-    { code: 'C06', width: 550, height: 1180, label: '550 x 1180' },
     { code: 'C08', width: 550, height: 1400, label: '550 x 1400' },
-    { code: 'C12', width: 550, height: 1800, label: '550 x 1800' },
     { code: 'M02', width: 780, height: 780, label: '780 x 780' },
     { code: 'M04', width: 780, height: 980, label: '780 x 980' },
     { code: 'M06', width: 780, height: 1180, label: '780 x 1180' },
@@ -55,21 +53,21 @@ export const PITCHED_SIZES: Size[] = [
 ];
 
 export const FLAT_SIZES: Size[] = [
-    { code: '1430', width: 460, height: 870, label: '460 x 870' }, // Overall Curb
-    { code: '2222', width: 665, height: 665, label: '665 x 665' },
-    { code: '2230', width: 665, height: 870, label: '665 x 870' },
-    { code: '2234', width: 665, height: 970, label: '665 x 970' },
-    { code: '2246', width: 665, height: 1275, label: '665 x 1275' },
-    { code: '2270', width: 665, height: 1885, label: '665 x 1885' },
-    { code: '3030', width: 870, height: 870, label: '870 x 870' },
-    { code: '3046', width: 870, height: 1275, label: '870 x 1275' },
-    { code: '3055', width: 870, height: 1505, label: '870 x 1505' },
-    { code: '3072', width: 870, height: 1935, label: '870 x 1935' },
-    { code: '3434', width: 970, height: 970, label: '970 x 970' },
-    { code: '3446', width: 970, height: 1275, label: '970 x 1275' },
-    { code: '4622', width: 1275, height: 665, label: '1275 x 665' },
-    { code: '4646', width: 1275, height: 1275, label: '1275 x 1275' },
-    { code: '4672', width: 1275, height: 1935, label: '1275 x 1935' },
+    { code: '1430', width: 488, height: 895, label: '488 x 895' },
+    { code: '2222', width: 692, height: 692, label: '692 x 692' },
+    { code: '2230', width: 692, height: 895, label: '692 x 895' },
+    { code: '2234', width: 692, height: 997, label: '692 x 997' },
+    { code: '2246', width: 692, height: 1302, label: '692 x 1302' },
+    { code: '2270', width: 692, height: 1911, label: '692 x 1911' },
+    { code: '3030', width: 895, height: 895, label: '895 x 895' },
+    { code: '3046', width: 895, height: 1302, label: '895 x 1302' },
+    { code: '3055', width: 895, height: 1527, label: '895 x 1527' },
+    { code: '3072', width: 895, height: 1959, label: '895 x 1959' },
+    { code: '3434', width: 997, height: 997, label: '997 x 997' },
+    { code: '3446', width: 997, height: 1302, label: '997 x 1302' },
+    { code: '4622', width: 1302, height: 692, label: '1302 x 692' },
+    { code: '4646', width: 1302, height: 1302, label: '1302 x 1302' },
+    { code: '4672', width: 1302, height: 1959, label: '1302 x 1959' },
 ];
 
 export const ROOF_WINDOW_SIZES: Size[] = [
@@ -79,6 +77,7 @@ export const ROOF_WINDOW_SIZES: Size[] = [
     { code: 'MK06', width: 780, height: 1180, label: '780 x 1180' },
     { code: 'MK08', width: 780, height: 1400, label: '780 x 1400' },
     { code: 'SK06', width: 1140, height: 1180, label: '1140 x 1180' },
+    { code: 'SK08', width: 1140, height: 1400, label: '1140 x 1400' },
 ];
 
 export const PRODUCTS: Product[] = [
@@ -89,11 +88,11 @@ export const PRODUCTS: Product[] = [
         name: 'Fixed Skylight (FS)',
         roofType: ['pitched'],
         openingType: 'fixed',
-        compatibleSizes: ['C01', 'C04', 'C06', 'C08', 'C12', 'M02', 'M04', 'M06', 'M08', 'S01', 'S06'],
+        compatibleSizes: ['C01', 'C04', 'C08', 'M02', 'M04', 'M06', 'M08', 'S01', 'S06'],
         prices: {
-            'C01': 558, 'C04': 645, 'C06': 740, 'C08': 827, 'C12': 1170,
-            'M02': 761, 'M04': 803, 'M06': 909, 'M08': 1017, 'S01': 885,
-            'S06': 1056
+            'C01': 630, 'C04': 700, 'C08': 790,
+            'M02': 790, 'M04': 800, 'M06': 880, 'M08': 950, 'S01': 850,
+            'S06': 1020
         },
         image: '/FS-skylight.jpg'
     },
@@ -103,10 +102,10 @@ export const PRODUCTS: Product[] = [
         name: 'Manual Opening Skylight (VS)',
         roofType: ['pitched'],
         openingType: 'manual',
-        compatibleSizes: ['C01', 'C04', 'C06', 'C08', 'M02', 'M04', 'M06', 'M08', 'S01', 'S06'],
+        compatibleSizes: ['C04', 'C08', 'M02', 'M04', 'M06', 'M08', 'S01', 'S06'],
         prices: {
-            'C01': 1271, 'C04': 1292, 'C06': 1381, 'C08': 1451, 'M02': 1451,
-            'M04': 1514, 'M06': 1653, 'M08': 1792, 'S01': 1594, 'S06': 2009
+            'C04': 1330, 'C08': 1420, 'M02': 1440,
+            'M04': 1450, 'M06': 1520, 'M08': 1610, 'S01': 1490, 'S06': 1650
         },
         image: '/VS-skylight.jpg'
     },
@@ -116,10 +115,10 @@ export const PRODUCTS: Product[] = [
         name: 'Electric Opening Skylight (VSE)',
         roofType: ['pitched'],
         openingType: 'electric',
-        compatibleSizes: ['C01', 'C04', 'C06', 'C08', 'M04', 'M06', 'M08', 'S01', 'S06'],
+        compatibleSizes: ['C04', 'C08', 'M04', 'M06', 'M08', 'S01', 'S06'],
         prices: {
-            'C01': 2392, 'C04': 2421, 'C06': 2486, 'C08': 2547, 'M04': 2596,
-            'M06': 2709, 'M08': 2823, 'S01': 2686, 'S06': 2995
+            'C04': 2420, 'C08': 2450, 'M04': 2500,
+            'M06': 2550, 'M08': 2660, 'S01': 2550, 'S06': 2690
         },
         image: '/VSE-skylight.jpg'
     },
@@ -129,39 +128,38 @@ export const PRODUCTS: Product[] = [
         name: 'Solar Opening Skylight (VSS)',
         roofType: ['pitched'],
         openingType: 'solar',
-        compatibleSizes: ['C01', 'C04', 'C06', 'C08', 'M02', 'M04', 'M06', 'M08', 'S01', 'S06'],
+        compatibleSizes: ['C04', 'C08', 'M02', 'M04', 'M06', 'M08', 'S01', 'S06'],
         prices: {
-            'C01': 2579, 'C04': 2610, 'C06': 2680, 'C08': 2746, 'M02': 2735,
-            'M04': 2799, 'M06': 2921, 'M08': 3043, 'S01': 2896, 'S06': 3229
+            'C04': 2600, 'C08': 2630, 'M02': 2650,
+            'M04': 2680, 'M06': 2730, 'M08': 2840, 'S01': 2730, 'S06': 2870
         },
         image: '/VSS-skylight.png'
     },
     // ROOF WINDOWS
     {
-        id: 'ggl',
-        model: 'GGL',
-        name: 'Centre Pivot Roof Window (GGL)',
+        id: 'ggu_0076',
+        model: 'GGU 0076',
+        name: 'Centre Pivot Roof Window (Double Glazing)',
         roofType: ['pitched'],
         openingType: 'manual',
-        compatibleSizes: ['CK02', 'CK04', 'MK04', 'MK08', 'SK06'],
+        compatibleSizes: ['CK02', 'CK04', 'MK04', 'MK06', 'MK08', 'SK06', 'SK08'],
         prices: {
-            'CK02': 842, 'CK04': 893, 'MK04': 1045, 'MK08': 1277, 'SK06': 1581
+            'CK02': 900, 'CK04': 970, 'MK04': 1060, 'MK06': 1180, 'MK08': 1250, 'SK06': 1500, 'SK08': 1710
+        },
+        image: '/GGL-roof-window.png' // Use existing window image until provided with GGU image
+    },
+    {
+        id: 'ggu_0066',
+        model: 'GGU 0066',
+        name: 'Centre Pivot Roof Window (Triple Glazing)',
+        roofType: ['pitched'],
+        openingType: 'manual',
+        compatibleSizes: ['CK04', 'MK04', 'MK08', 'SK06'],
+        prices: {
+            'CK04': 1370, 'MK04': 1460, 'MK08': 1650, 'SK06': 1900
         },
         image: '/GGL-roof-window.png'
     },
-    {
-        id: 'gpl',
-        model: 'GPL',
-        name: 'Dual Action Roof Window (GPL)',
-        roofType: ['pitched'],
-        openingType: 'manual',
-        compatibleSizes: ['CK04', 'MK04', 'MK06', 'MK08', 'SK06'],
-        prices: {
-            'CK04': 1003, 'MK04': 1153, 'MK06': 1264, 'MK08': 1429, 'SK06': 1665
-        },
-        image: '/GPL-roof-window.png'
-    },
-
     // FLAT ROOF
     {
         id: 'fcm',
@@ -169,12 +167,11 @@ export const PRODUCTS: Product[] = [
         name: 'Flat Roof Fixed (FCM)',
         roofType: ['flat'],
         openingType: 'fixed',
-        compatibleSizes: ['1430', '2222', '2230', '2234', '2246', '2270', '3030', '3046', '3055', '3072', '3434', '3446', '4646', '4672'],
-        // Excluding 4622 as it is not in price list for FCM
+        compatibleSizes: ['1430', '2222', '2230', '2234', '2246', '2270', '3030', '3046', '3055', '3072', '3434', '3446', '4622', '4646', '4672'],
         prices: {
-            '1430': 379, '2222': 411, '2230': 447, '2234': 473, '2246': 537,
-            '2270': 968, '3030': 519, '3046': 659, '3055': 804, '3072': 2041,
-            '3434': 591, '3446': 696, '4646': 731, '4672': 2271
+            '1430': 600, '2222': 610, '2230': 640, '2234': 680, '2246': 740,
+            '2270': 1130, '3030': 730, '3046': 880, '3055': 1090, '3072': 2010,
+            '3434': 750, '3446': 950, '4622': 740, '4646': 1090, '4672': 2220
         },
         image: '/FCM-skylight.jpg'
     },
@@ -184,10 +181,10 @@ export const PRODUCTS: Product[] = [
         name: 'Flat Roof Manual (VCM)',
         roofType: ['flat'],
         openingType: 'manual',
-        compatibleSizes: ['2222', '2234', '2246', '3030', '3046', '3434', '4646'],
+        compatibleSizes: ['2222', '2234', '2246', '3030', '3046', '4646'],
         prices: {
-            '2222': 1342, '2234': 1449, '2246': 1601, '3030': 1678, '3046': 1822,
-            '3434': 1753, '4646': 2136
+            '2222': 1550, '2234': 1670, '2246': 1740, '3030': 1710, '3046': 1910,
+            '4646': 2040
         },
         image: '/VCM-skylight.jpg'
     },
@@ -197,12 +194,12 @@ export const PRODUCTS: Product[] = [
         name: 'Flat Roof Solar (VCS)',
         roofType: ['flat'],
         openingType: 'solar',
-        compatibleSizes: ['2222', '2234', '2246', '3030', '3046', '3434', '4622', '4646'],
+        compatibleSizes: ['2222', '2234', '2246', '3030', '3046', '4622', '4646'],
         prices: {
-            '2222': 2598, '2234': 2747, '2246': 2927, '3030': 2937, '3046': 3081,
-            '3434': 3000, '4622': 2946, '4646': 3228
+            '2222': 2700, '2234': 2780, '2246': 2840, '3030': 2810, '3046': 2980,
+            '4622': 2840, '4646': 3090
         },
-        image: '/VCS-skylight.jpg',
+        image: '/VCS-skylight.jpg'
     },
     // SUN TUNNELS
     {
@@ -210,10 +207,10 @@ export const PRODUCTS: Product[] = [
         model: 'TWR',
         name: 'Rigid Sun Tunnel (TWR)',
         roofType: ['pitched'],
-        openingType: 'fixed', // Not really opening, but prevents filter issues if generic
+        openingType: 'fixed',
         compatibleSizes: ['0K14'],
         prices: {
-            '0K14': 781
+            '0K14': 860
         },
         image: '/TWR-sun-tunnel.jpg'
     },
@@ -225,7 +222,7 @@ export const PRODUCTS: Product[] = [
         openingType: 'fixed',
         compatibleSizes: ['0K14'],
         prices: {
-            '0K14': 482
+            '0K14': 610
         },
         image: '/TWF-sun-tunnel.jpg'
     },
@@ -233,123 +230,135 @@ export const PRODUCTS: Product[] = [
         id: 'tcr',
         model: 'TCR',
         name: 'Sun Tunnel (TCR)',
-        roofType: ['flat', 'pitched'], // Can be used on both per user logic
+        roofType: ['flat', 'pitched'],
         openingType: 'fixed',
         compatibleSizes: ['014'],
         prices: {
-            '014': 831
+            '014': 980
         },
         image: '/TCR-sun-tunnel.jpg'
     }
 ];
 
-export const FLASHINGS: Flashing = {
-    id: 'edw',
-    name: 'EDW Flashing (Tile/Corrugated)',
-    prices: {
-            'C01': 117, 'C04': 123, 'C06': 124, 'C08': 132, 'C12': 164,
-            'M02': 142, 'M04': 142, 'M06': 146, 'M08': 149, 'S01': 150,
-            'S06': 176, 'CK02': 122, 'CK04': 135, 'MK04': 155, 'MK06': 160,
-            'MK08': 163, 'SK06': 193
+export const FLASHINGS: Flashing[] = [
+    {
+        id: 'edw',
+        name: 'EDW Flashing (Tile/Metal Roofs)',
+        prices: {
+            'C01': 210, 'C04': 220, 'C08': 230,
+            'M02': 230, 'M04': 240, 'M06': 260, 'M08': 270, 'S01': 270,
+            'S06': 280, 'CK02': 200, 'CK04': 220, 'MK04': 240, 'MK06': 260,
+            'MK08': 270, 'SK06': 280, 'SK08': 290
         }
-};
+    },
+    {
+        id: 'edl',
+        name: 'EDL Flashing (Slate/Shingle Roofs)',
+        prices: {
+            'C01': 200, 'C04': 200, 'C08': 200,
+            'M02': 240, 'M04': 240, 'M06': 240, 'M08': 240, 'S01': 250,
+            'S06': 250, 'CK02': 190, 'CK04': 200, 'MK04': 230, 'MK06': 250,
+            'MK08': 260, 'SK06': 270, 'SK08': 290
+        }
+    }
+];
 
 export const BLINDS: Blind[] = [
     {
         id: 'fscd',
         model: 'FSCD',
         name: 'Solar Honeycomb',
-        subtitle: '(Darkening)',
+        subtitle: '(Room Darkening)',
         type: 'darkening',
         compatibleModels: ['FS'],
         prices: {
-            'C01': 635, 'C04': 635, 'C06': 635, 'C08': 635, 'C12': 794,
-            'M02': 650, 'M04': 650, 'M06': 650, 'M08': 650, 'S01': 663,
-            'S06': 663
+            'C01': 690, 'C04': 700, 'C08': 720,
+            'M02': 730, 'M04': 750, 'M06': 760, 'M08': 770, 'S01': 760,
+            'S06': 790
         },
         image: '/solar-honeycomb-blackout.png'
     },
     {
         id: 'fsld',
         model: 'FSLD',
-        name: 'Solar Translucent',
+        name: 'Solar Pleated',
         subtitle: '(Light Filtering)',
         type: 'translucent',
         compatibleModels: ['FS'],
         prices: {
-            'C01': 635, 'C04': 635, 'C06': 635, 'C08': 635, 'C12': 0,
-            'M02': 650, 'M04': 650, 'M06': 650, 'M08': 650, 'S01': 663,
-            'S06': 663
+            'C01': 690, 'C04': 700, 'C08': 720,
+            'M02': 730, 'M04': 750, 'M06': 760, 'M08': 770, 'S01': 760,
+            'S06': 790
         },
         image: '/solar-translucent.png'
-        // Note: C12 excluded in data markdown for FSLD/FSCH/FSLH
     },
     {
         id: 'fsch',
         model: 'FSCH',
         name: 'Solar Honeycomb',
-        subtitle: '(Darkening)',
+        subtitle: '(Room Darkening)',
         type: 'darkening',
         compatibleModels: ['VS', 'VSE', 'VSS'],
         prices: {
-            'C01': 635, 'C04': 635, 'C06': 635, 'C08': 635, 'M02': 650,
-            'M04': 650, 'M06': 650, 'M08': 650, 'S01': 663, 'S06': 663
+            'C04': 700, 'C08': 720, 'M02': 730,
+            'M04': 750, 'M06': 760, 'M08': 770, 'S01': 760, 'S06': 790
         },
         image: '/solar-honeycomb-blackout.png'
     },
     {
         id: 'fslh',
         model: 'FSLH',
-        name: 'Solar Translucent',
+        name: 'Solar Pleated',
         subtitle: '(Light Filtering)',
         type: 'translucent',
         compatibleModels: ['VS', 'VSE', 'VSS'],
         prices: {
-            'C01': 635, 'C04': 635, 'C06': 635, 'C08': 635, 'M02': 650,
-            'M04': 650, 'M06': 650, 'M08': 650, 'S01': 663, 'S06': 663
+            'C04': 700, 'C08': 720, 'M02': 730,
+            'M04': 750, 'M06': 760, 'M08': 770, 'S01': 760, 'S06': 790
         },
         image: '/solar-translucent.png'
     },
-    // ROOF WINDOW BLINDS
     {
-        id: 'fhc',
-        model: 'FHC',
-        name: 'Manual Honeycomb Blackout',
-        subtitle: '(Room Darkening)',
-        type: 'darkening',
-        compatibleModels: ['GGL', 'GPL'],
+        id: 'dfd',
+        model: 'DFD',
+        name: 'Manual DUO Blind',
+        subtitle: '(2 in 1 Blackout + Translucent)',
+        type: 'darkening', 
+        compatibleModels: ['GGU 0076', 'GGU 0066'],
         prices: {
-            'CK02': 257, 'CK04': 273, 'MK04': 283, 'MK06': 302, 'MK08': 329,
-            'SK06': 355
+            'CK02': 250, 'CK04': 270, 'MK04': 290, 'MK06': 320, 'MK08': 360,
+            'SK06': 380, 'SK08': 390
         },
-        image: '/solar-honeycomb-blackout.png' // Utilizing existing image for now
-    },
-    {
-        id: 'zil',
-        model: 'ZIL',
-        name: 'Insect Screen',
-        type: 'accessory',
-        compatibleModels: ['GGL', 'GPL'],
-        prices: {
-            'CK02': 339, 'CK04': 339, 'MK04': 419, 'MK06': 419, 'MK08': 419,
-            'SK06': 465, 'CK06': 351, 'MK10': 433, 'SK10': 481
-        },
-        image: '/ZIL-insect-screen.png'
+        image: '/dfd-blind.png' 
     },
     // Flat roof blinds
     {
         id: 'fscc',
         model: 'FSCC',
         name: 'Solar Honeycomb',
-        subtitle: '(Darkening)',
+        subtitle: '(Room Darkening)',
         type: 'darkening',
         compatibleModels: ['FCM', 'VCM', 'VCS'],
         prices: {
-            '1430': 615, '2222': 637, '2230': 637, '2234': 637, '2246': 637,
-            '2270': 731, '3030': 649, '3046': 649, '3055': 640, '3072': 706,
-            '3434': 662, '3446': 662, '4646': 704, '4672': 706, '4622': 704
+            '2222': 690, '2230': 710, '2234': 720, '2246': 730,
+            '2270': 780, '3030': 740, '3046': 770,
+            '3434': 750, '3446': 790, '4646': 850, '4622': 810
         },
         image: '/solar-honeycomb-blackout.png'
+    },
+    {
+        id: 'fslc',
+        model: 'FSLC',
+        name: 'Solar Pleated',
+        subtitle: '(Light Filtering)',
+        type: 'translucent',
+        compatibleModels: ['FCM', 'VCM', 'VCS'],
+        prices: {
+            '2222': 690, '2230': 710, '2234': 720, '2246': 730,
+            '2270': 780, '3030': 740, '3046': 770,
+            '3434': 750, '3446': 790, '4646': 850, '4622': 810
+        },
+        image: '/solar-translucent.png'
     }
 ];
 
@@ -359,18 +368,17 @@ export const ACCESSORIES = [
         name: 'ZZZ 199 Blind Tray',
         compatibleModels: ['FCM', 'VCM', 'VCS'],
         prices: {
-            '2222': 98, '2230': 98, '2234': 98, '2246': 98, '2270': 126,
-            '3030': 101, '3046': 101, '3434': 105, '3446': 105, '4622': 109,
-            '4646': 109
+            '2222': 190, '2230': 200, '2234': 210, '2246': 230, '2270': 290,
+            '3030': 240, '3046': 260, '3434': 250, '3446': 270, '4622': 230,
+            '4646': 300
         }
     },
     {
-        id: 'ztr0k14',
-        name: 'ZTR 0K14 Rigid 1240mm Extension',
+        id: 'ztr014',
+        name: 'ZTR 014 Rigid Extension',
         compatibleModels: ['TWR', 'TCR'],
         prices: {
-            '0K14': 307
+            '014': 280
         }
     }
 ];
-

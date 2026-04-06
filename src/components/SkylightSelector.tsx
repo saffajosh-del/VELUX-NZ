@@ -16,9 +16,9 @@ type StepId = 'product-type' | 'pitch' | 'material' | 'sun-tunnel-type' | 'roof-
 interface SelectionState {
     productCategory: 'skylight' | 'roof-window' | 'sun-tunnel' | null;
     roofPitch: 'pitched' | 'flat' | null;
-    roofMaterial: 'tiled-corrugated' | 'wide-metal' | null;
+    roofMaterial: 'tiled-corrugated' | 'wide-metal' | 'slate-shingle' | null;
     // Derived or legacy mapping for compatibility
-    roofType: 'tiled' | 'corrugated' | 'wide-metal' | 'flat' | null;
+    roofType: 'tiled' | 'corrugated' | 'wide-metal' | 'flat' | 'slate' | null;
     // installType removed, assumed 'new'
     openingType: 'fixed' | 'manual' | 'electric' | 'solar' | null;
     orientation: 'portrait' | 'landscape' | null;
@@ -73,6 +73,7 @@ const PITCH_OPTIONS = [
 
 const MATERIAL_OPTIONS = [
     { id: 'tiled-corrugated', label: 'Tiled / Corrugated Metal', image: '/Untitled design (9).png' },
+    { id: 'slate-shingle', label: 'Slate / Shingle Roofs', image: '/shingle-roof.png' },
     { id: 'wide-metal', label: 'Wide-span Metal (Trimdek / Klip-Lok)', image: '/IMG_3050.JPG' },
 ];
 
@@ -143,11 +144,11 @@ export default function SkylightSelector() {
                 if (selection.selectedProduct) {
                     return p.id === selection.selectedProduct;
                 }
-                return p.id === 'ggl' || p.id === 'gpl';
+                return p.id === 'ggu_0076' || p.id === 'ggu_0066';
             }
             if (selection.productCategory === 'skylight') {
                 // Exclude Roof Windows and Sun Tunnels from Skylight flow
-                if (['ggl', 'gpl', 'twr', 'twf', 'tcr'].includes(p.id)) return false;
+                if (['ggu_0076', 'ggu_0066', 'twr', 'twf', 'tcr'].includes(p.id)) return false;
             }
 
             // 1. Roof Type Check
@@ -300,7 +301,7 @@ export default function SkylightSelector() {
     };
 
     const handleMaterialSelect = (id: string) => {
-        const mappedType = id === 'tiled-corrugated' ? 'tiled' : 'wide-metal';
+        const mappedType = id === 'tiled-corrugated' ? 'tiled' : id === 'slate-shingle' ? 'slate' : 'wide-metal';
         setSelection({ ...selection, roofMaterial: id as any, roofType: mappedType });
 
         if (selection.productCategory === 'sun-tunnel') {
@@ -331,7 +332,7 @@ export default function SkylightSelector() {
         nextStep('results');
     };
 
-    const handleRoofWindowModelSelect = (model: 'ggl' | 'gpl') => {
+    const handleRoofWindowModelSelect = (model: 'ggu_0076' | 'ggu_0066') => {
         setSelection({ ...selection, selectedProduct: model });
         nextStep('truss');
     };
@@ -463,11 +464,11 @@ export default function SkylightSelector() {
 
     const renderMaterialStep = () => (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {MATERIAL_OPTIONS.map((opt) => (
+            {MATERIAL_OPTIONS.map((opt, index) => (
                 <button
                     key={opt.id}
                     onClick={() => handleMaterialSelect(opt.id)}
-                    className="flex flex-col items-center justify-center p-8 bg-white border border-border rounded-xl shadow-sm hover:shadow-md hover:border-primary/50 transition-all group"
+                    className={`flex flex-col items-center justify-center p-8 bg-white border border-border rounded-xl shadow-sm hover:shadow-md hover:border-primary/50 transition-all group ${MATERIAL_OPTIONS.length === 3 && index === 2 ? 'md:col-span-2 md:w-[calc(50%-0.5rem)] md:mx-auto' : ''}`}
                 >
                     <img src={opt.image} alt={opt.label} className="w-32 h-32 object-contain mb-4" />
                     <span className="text-lg font-medium text-center text-foreground">{opt.label}</span>
@@ -484,7 +485,7 @@ export default function SkylightSelector() {
             >
                 {/* <div className="text-4xl mb-4">🔦</div> -- REMOVED */}
                 <span className="text-lg font-bold">Rigid Sun Tunnel</span>
-                <span className="text-sm text-muted-foreground mt-2">Recommended for longer distances</span>
+                <span className="text-sm text-muted-foreground mt-2">Recommended for <strong>longer</strong> distances</span>
             </button>
             <button
                 onClick={() => handleSunTunnelTypeSelect('flexible')}
@@ -492,7 +493,7 @@ export default function SkylightSelector() {
             >
                 {/* <div className="text-4xl mb-4">〰️</div> -- REMOVED */}
                 <span className="text-lg font-bold">Flexible Sun Tunnel</span>
-                <span className="text-sm text-muted-foreground mt-2">Ideal for shorter distances</span>
+                <span className="text-sm text-muted-foreground mt-2">Ideal for <strong>shorter</strong> distances</span>
             </button>
         </div>
     );
@@ -500,39 +501,39 @@ export default function SkylightSelector() {
     const renderRoofWindowModelStep = () => (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <button
-                onClick={() => handleRoofWindowModelSelect('ggl')}
+                onClick={() => handleRoofWindowModelSelect('ggu_0076')}
                 className="flex flex-col items-center p-8 bg-white border border-border rounded-xl shadow-sm hover:shadow-md hover:border-primary/50 transition-all text-left overflow-hidden group"
             >
                 <div className="w-full h-48 mb-6 flex items-center justify-center rounded-lg overflow-hidden">
                     <img
                         src="/GGL-roof-window.png"
-                        alt="Centre Pivot Roof Window (GGL)"
+                        alt="Centre Pivot Roof Window (Double Glazing)"
                         className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                     />
                 </div>
-                <span className="text-xl font-bold mb-2">Centre Pivot (GGL)</span>
+                <span className="text-xl font-bold mb-2 text-center">GGU - Double Glazed</span>
                 <ul className="text-sm text-muted-foreground space-y-1 list-disc pl-4">
                     <li>Top control bar</li>
-                    <li>Convenient even with furniture placed beneath</li>
+                    <li>General thermal control, standard acoustic needs</li>
                     <li>Suitable for pitch 15°-90°</li>
                 </ul>
             </button>
             <button
-                onClick={() => handleRoofWindowModelSelect('gpl')}
+                onClick={() => handleRoofWindowModelSelect('ggu_0066')}
                 className="flex flex-col items-center p-8 bg-white border border-border rounded-xl shadow-sm hover:shadow-md hover:border-primary/50 transition-all text-left overflow-hidden group"
             >
                 <div className="w-full h-48 mb-6 flex items-center justify-center rounded-lg overflow-hidden">
                     <img
-                        src="/GPL-roof-window.png"
-                        alt="Dual Action Roof Window (GPL)"
+                        src="/GGL-roof-window.png"
+                        alt="Centre Pivot Roof Window (Triple Glazing)"
                         className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                     />
                 </div>
-                <span className="text-xl font-bold mb-2">Dual Action (GPL)</span>
+                <span className="text-xl font-bold mb-2 text-center">GGU - Triple Glazed</span>
                 <ul className="text-sm text-muted-foreground space-y-1 list-disc pl-4">
-                    <li>Opens outwards for panoramic views</li>
-                    <li>Maximized headroom</li>
-                    <li>Suitable for pitch 15°-55°</li>
+                    <li>Top control bar</li>
+                    <li>Ideal for extreme climates, high-noise environments, and ultra high energy ratings</li>
+                    <li>Suitable for pitch 15°-90°</li>
                 </ul>
             </button>
         </div>
@@ -652,7 +653,7 @@ export default function SkylightSelector() {
                                         <div className="flex items-center text-sm">
                                             <Check className="w-5 h-5 text-primary mr-3" />
                                             <span>
-                                                {product.id === 'tcr' ? 'For Flat Roofs (0°-60°)' : 'For Pitched Roofs (15°-60°)'}
+                                                {product.id === 'tcr' ? 'For Flat / Low-Pitch Roofs (0°-60°)' : 'For Pitched Roofs (15°-60°)'}
                                             </span>
                                         </div>
                                         {product.id === 'tcr' && (
@@ -817,7 +818,10 @@ export default function SkylightSelector() {
                 if (selection.selectedProduct) {
                     return p.id === selection.selectedProduct;
                 }
-                return p.id === 'ggl' || p.id === 'gpl';
+                return p.id === 'ggu_0076' || p.id === 'ggu_0066';
+            }
+            if (selection.productCategory === 'skylight') {
+                if (['ggu_0076', 'ggu_0066', 'twr', 'twf', 'tcr'].includes(p.id)) return false;
             }
 
             if (selection.roofType) {
@@ -1052,15 +1056,15 @@ export default function SkylightSelector() {
     };
 
     const renderAddonStep = () => {
-        const ztr = ACCESSORIES.find(a => a.id === 'ztr0k14');
-        const price = ztr?.prices['0K14'] || 0;
+        const ztr = ACCESSORIES.find(a => a.id === 'ztr014');
+        const price = ztr?.prices['014'] || 0;
 
         return (
             <div className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Card
-                        className={`cursor-pointer transition-all hover:border-primary/50 overflow-hidden group ${selection.selectedAddon === 'ztr0k14' ? 'ring-2 ring-primary border-primary' : ''}`}
-                        onClick={() => handleAddonSelect(selection.selectedAddon === 'ztr0k14' ? null : 'ztr0k14')}
+                        className={`cursor-pointer transition-all hover:border-primary/50 overflow-hidden group ${selection.selectedAddon === 'ztr014' ? 'ring-2 ring-primary border-primary' : ''}`}
+                        onClick={() => handleAddonSelect(selection.selectedAddon === 'ztr014' ? null : 'ztr014')}
                     >
                         <CardContent className="p-0 flex flex-col items-center text-center h-full">
                             <div className="aspect-video relative bg-gray-50 flex items-center justify-center p-8 w-full">
@@ -1071,11 +1075,11 @@ export default function SkylightSelector() {
                                     <h3 className="font-bold text-lg">{ztr?.name}</h3>
                                 </div>
                                 <p className="text-sm text-muted-foreground mb-4">
-                                    Extend the length of your Sun Tunnel. Recommended for deeper roof cavities.
+                                    Extend the length of your sun tunnel. Recommended for deeper roof cavities. <strong>Extend up to an additional 1180mm</strong>
                                 </p>
                                 <div className="text-xl font-bold text-primary mb-4">${price}</div>
                                 <div className="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-bold bg-gray-50">
-                                    {selection.selectedAddon === 'ztr0k14' ? 'Added' : 'Click to Add'}
+                                    {selection.selectedAddon === 'ztr014' ? 'Added' : 'Click to Add'}
                                 </div>
                             </div>
                         </CardContent>
@@ -1138,8 +1142,13 @@ export default function SkylightSelector() {
             // Skylight Logic
             if (selection.roofPitch === 'pitched') {
                 if (selection.roofMaterial === 'tiled-corrugated') {
-                    flashingPrice = FLASHINGS.prices[sizeCode] || 0;
-                    flashingName = `EDW ${sizeCode} Flashing (Tile/Corrugated)`;
+                    const flashing = FLASHINGS.find(f => f.id === 'edw');
+                    flashingPrice = flashing?.prices[sizeCode] || 0;
+                    flashingName = `EDW ${sizeCode} Flashing (Tile/Corrugated Metal)`;
+                } else if (selection.roofMaterial === 'slate-shingle') {
+                    const flashing = FLASHINGS.find(f => f.id === 'edl');
+                    flashingPrice = flashing?.prices[sizeCode] || 0;
+                    flashingName = `EDL ${sizeCode} Flashing (Slate/Shingle Roofs)`;
                 } else {
                     flashingName = 'Custom Flashing Required';
                 }
@@ -1170,16 +1179,16 @@ export default function SkylightSelector() {
             }
         }
 
-        // Addon Logic (ZTR 0K14)
+        // Addon Logic (ZTR 014)
         let addonPrice = 0;
         let addonName = '';
         const isCompatibleSunTunnel = product?.id === 'twr' || product?.id === 'tcr';
 
-        if (isCompatibleSunTunnel && selection.selectedAddon === 'ztr0k14') {
-            const ztr = ACCESSORIES.find(a => a.id === 'ztr0k14');
+        if (isCompatibleSunTunnel && selection.selectedAddon === 'ztr014') {
+            const ztr = ACCESSORIES.find(a => a.id === 'ztr014');
             if (ztr) {
                 // Cast to any/unknown to handle mixed key types
-                addonPrice = (ztr.prices as unknown as Record<string, number>)['0K14'] || 0;
+                addonPrice = (ztr.prices as unknown as Record<string, number>)['014'] || 0;
                 addonName = ztr.name;
             }
         }
@@ -1299,7 +1308,7 @@ export default function SkylightSelector() {
             case 'pitch': return 'Is your roof pitched or flat?';
             case 'material': return 'What is the roof material?';
             case 'sun-tunnel-type': return 'Select Sun Tunnel Type';
-            case 'roof-window-model': return 'Select Operation Method';
+            case 'roof-window-model': return 'Select Glazing';
             case 'opening': return 'How should the skylight open?';
             case 'truss': return 'What is your truss/rafter spacing?';
             case 'size': return selection.productCategory === 'roof-window' ? 'Select Window Size' : 'Select Skylight Size';

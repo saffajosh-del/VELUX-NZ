@@ -356,12 +356,44 @@ export default function SkylightSelector() {
         const results = validProducts.filter(p => p.compatibleSizes.includes(code));
         const selectedProduct = results.length > 0 ? results[0].id : null;
         setSelection({ ...selection, sizeCode: code, selectedProduct });
-        nextStep('blinds');
+        
+        let skipBlinds = false;
+        if (isFlatRoof && selectedProduct === 'fcm') {
+            const zzz199 = ACCESSORIES.find(a => a.id === 'zzz199');
+            if (zzz199) {
+                const prices = zzz199.prices as unknown as Record<string, number>;
+                if (!prices[code]) {
+                    skipBlinds = true;
+                }
+            }
+        }
+        
+        if (skipBlinds) {
+            nextStep('summary');
+        } else {
+            nextStep('blinds');
+        }
     };
 
     const handleProductSelect = (id: string) => {
         setSelection({ ...selection, selectedProduct: id });
-        nextStep('blinds');
+        
+        let skipBlinds = false;
+        if (isFlatRoof && id === 'fcm' && selection.sizeCode) {
+            const zzz199 = ACCESSORIES.find(a => a.id === 'zzz199');
+            if (zzz199) {
+                const prices = zzz199.prices as unknown as Record<string, number>;
+                if (!prices[selection.sizeCode]) {
+                    skipBlinds = true;
+                }
+            }
+        }
+        
+        if (skipBlinds) {
+            nextStep('summary');
+        } else {
+            nextStep('blinds');
+        }
     };
 
     const handleBlindSelect = (id: string | null) => {
@@ -612,7 +644,7 @@ export default function SkylightSelector() {
 
             <div className="flex flex-col items-center justify-center space-y-4 pt-4">
                 <p className="text-sm text-center text-muted-foreground px-4">
-                    Sizes above refer to <span className="font-bold">{selection.productCategory === 'roof-window' ? 'Overall Frame Dimensions' : 'Overall Curb Dimensions'}</span> and are <span className="italic text-red-600">width x height</span>.
+                    Sizes above refer to <span className="italic text-red-600">width x height</span>.
                 </p>
                 <img
                     src="/skylight-size.png"
@@ -895,19 +927,8 @@ export default function SkylightSelector() {
         const product = PRODUCTS.find(p => p.id === selection.selectedProduct);
         if (!product) return null;
 
-        // Check if blind tray is available for flat roof products
+// Check if blind tray is available for flat roof products
         // FCM sizes 1430, 3055, 3072, 4672 have no blind tray, so skip blinds entirely
-        if (isFlatRoof && product.id === 'fcm' && selection.sizeCode) {
-            const zzz199 = ACCESSORIES.find(a => a.id === 'zzz199');
-            if (zzz199) {
-                const prices = zzz199.prices as unknown as Record<string, number>;
-                if (!prices[selection.sizeCode]) {
-                    // No blind tray available for this size, skip to summary
-                    nextStep('summary');
-                    return null;
-                }
-            }
-        }
 
         // Separate Blinds (Darkening/Translucent) and Accessories (Screens)
         const compatibleItems = BLINDS.filter(b => b.compatibleModels.includes(product.model) && b.prices[selection.sizeCode!]);

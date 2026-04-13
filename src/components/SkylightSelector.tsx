@@ -678,7 +678,7 @@ export default function SkylightSelector() {
                                 <div>
                                     <h3 className="text-2xl font-bold mb-2">{product.name}</h3>
                                     <p className="text-muted-foreground mb-6">
-                                        {product.id === 'tcr' ? 'Up to 1150mm' : product.id === 'twr' ? 'Up to 1700mm' : 'Up to 2000mm'}
+                                        {product.id === 'tcr' ? 'Up to 1150mm' : product.id === 'twr' ? 'Up to 1700mm' : 'Up to 1500mm'}
                                     </p>
 
                                     <div className="space-y-3 mb-8">
@@ -702,7 +702,7 @@ export default function SkylightSelector() {
                                         )}
                                         <div className="flex items-center text-sm">
                                             <span className="font-medium text-right">
-                                                {product?.id === 'tcr' ? 'Up to 1150mm' : product?.id === 'twr' ? 'Up to 1700mm' : 'Up to 2000mm'}
+                                                {product?.id === 'tcr' ? 'Up to 1150mm' : product?.id === 'twr' ? 'Up to 1700mm' : 'Up to 1500mm'}
                                             </span>
                                         </div>
                                     </div>
@@ -1238,7 +1238,7 @@ export default function SkylightSelector() {
                                 <span className="text-muted-foreground">Size</span>
                                 {isSunTunnel ? (
                                     <span className="font-medium text-right">
-                                        {product?.id === 'tcr' ? 'Up to 1150mm' : product?.id === 'twr' ? 'Up to 1700mm' : 'Up to 2000mm'}
+                                        {product?.id === 'tcr' ? 'Up to 1150mm' : product?.id === 'twr' ? 'Up to 1700mm' : 'Up to 1500mm'}
                                     </span>
                                 ) : (
                                     <span className="font-medium text-right">{size ? `${size.label} mm` : sizeCode}</span>

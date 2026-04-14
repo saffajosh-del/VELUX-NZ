@@ -73,7 +73,7 @@ const PITCH_OPTIONS = [
 ];
 
 const MATERIAL_OPTIONS = [
-    { id: 'tiled-corrugated', label: 'Tiled / Corrugated Metal', image: '/Untitled design (9).png' },
+    { id: 'tiled-corrugated', label: 'Tiled / Corrugated Metal', image: '/Tile.png' },
     { id: 'slate-shingle', label: 'Slate / Shingle Roofs', image: '/shingle-roof.png' },
     { id: 'wide-metal', label: 'Wide-span Metal (Trimdek / Klip-Lok)', image: '/IMG_3050.JPG' },
 ];
@@ -506,7 +506,11 @@ export default function SkylightSelector() {
                     onClick={() => handleMaterialSelect(opt.id)}
                     className={`flex flex-col items-center justify-center p-8 bg-white border border-border rounded-xl shadow-sm hover:shadow-md hover:border-primary/50 transition-all group ${MATERIAL_OPTIONS.length === 3 && index === 2 ? 'md:col-span-2 md:w-[calc(50%-0.5rem)] md:mx-auto' : ''}`}
                 >
-                    <img src={opt.image} alt={opt.label} className="w-32 h-32 object-contain mb-4" />
+                    <img 
+                        src={opt.image} 
+                        alt={opt.label} 
+                        className={`object-contain mb-4 transition-transform duration-300 group-hover:scale-105 ${opt.id === 'tiled-corrugated' ? 'w-28 h-28' : 'w-40 h-40'}`} 
+                    />
                     <span className="text-lg font-medium text-center text-foreground">{opt.label}</span>
                 </button>
             ))}

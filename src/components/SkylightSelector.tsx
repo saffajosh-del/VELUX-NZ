@@ -96,7 +96,7 @@ const TRUSS_OPTIONS = [
 
 export default function SkylightSelector() {
     const isBunningsPartner = typeof window !== 'undefined' && 
-        (window.location.hostname === 'bunnings.skylightselector.co.nz' || import.meta.env.VITE_PARTNER === 'bunnings' || import.meta.env.NEXT_PUBLIC_PARTNER === 'bunnings');
+        (window.location.hostname === 'bunnings.skylightselector.co.nz' || import.meta.env.VITE_PARTNER === 'bunnings' || import.meta.env.NEXT_PUBLIC_PARTNER === 'bunnings' || import.meta.env.NEXT_PUBLIC_FORCE_CUSTOMER === 'bunnings' || import.meta.env.NEXT_PUBLIC_FORCE_CUSTOMER === 'true');
 
     const [step, setStep] = useState<StepId>('product-type');
     const [history, setHistory] = useState<StepId[]>([]);

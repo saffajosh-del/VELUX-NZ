@@ -634,9 +634,12 @@ export default function SkylightSelector() {
                         <button
                             key={s.code}
                             onClick={() => handleSizeSelect(s.code)}
-                            className={`w-[calc(50%-6px)] ${desktopWidthClass} p-4 bg-white border border-border rounded-lg hover:border-primary transition-all text-center flex flex-col items-center justify-center min-h-[100px] group`}
+                            className={`w-[calc(50%-6px)] ${desktopWidthClass} p-4 bg-white border border-border rounded-lg hover:border-primary transition-all text-center flex flex-col items-center justify-center min-h-[100px] group relative`}
                         >
                             <span className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">{s.label} mm</span>
+                            {isFlatRoof && selection.openingType === 'fixed' && ['2270', '3072', '4672'].includes(s.code) && (
+                                <span className="text-xs text-red-500 font-medium mt-1">Portrait orientation only</span>
+                            )}
                         </button>
                     );
                 })}

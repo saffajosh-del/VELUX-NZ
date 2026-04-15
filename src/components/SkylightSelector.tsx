@@ -1403,6 +1403,9 @@ export default function SkylightSelector() {
 
     return (
         <div className="max-w-2xl mx-auto w-full min-h-screen py-10 px-4 flex flex-col font-sans">
+            <div className="bg-red-500 text-white p-2 text-center font-mono tracking-widest text-xs font-bold w-full rounded-md mb-4 uppercase">
+                DEBUG VITE_FORCE_CUSTOMER: {import.meta.env.VITE_FORCE_CUSTOMER || 'undefined'}
+            </div>
             {/* Header - Minimalist */}
             {isBunningsPartner ? (
                 <div className="mb-12 flex justify-center items-center w-full">

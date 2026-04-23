@@ -979,7 +979,6 @@ export default function SkylightSelector() {
                                                 {b.subtitle && (
                                                     <p className="text-muted-foreground font-medium text-sm mb-3 text-gray-700">{b.subtitle}</p>
                                                 )}
-                                                <div className="text-xl font-bold text-primary">+${price}</div>
                                                 <div className="mt-4 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-bold">
                                                     {isSelected ? 'Added' : 'Click to Add'}
                                                 </div>
@@ -1017,7 +1016,6 @@ export default function SkylightSelector() {
                                                     )}
                                                     <h3 className="text-lg font-bold mb-1">{s.name}</h3>
                                                     <p className="text-muted-foreground font-medium text-sm mb-3">Keep bugs out while letting fresh air in</p>
-                                                    <div className="text-xl font-bold text-primary">+${price}</div>
                                                     <div className="mt-4 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-bold">
                                                         {isSelected ? 'Added' : 'Click to Add'}
                                                     </div>
@@ -1066,7 +1064,6 @@ export default function SkylightSelector() {
                                     {b.subtitle && (
                                         <p className="text-muted-foreground font-medium text-sm mb-3 text-gray-700">{b.subtitle}</p>
                                     )}
-                                    <div className="text-xl font-bold text-primary">+${price}</div>
                                 </CardContent>
                             </Card>
                         );

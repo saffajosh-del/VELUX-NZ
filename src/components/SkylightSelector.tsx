@@ -6,8 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Check, ArrowLeft, Printer } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import bunningsMapping from '../data/bunnings-mapping.json';
-
 type StepId = 'product-type' | 'pitch' | 'material' | 'sun-tunnel-type' | 'roof-window-model' | 'opening' | 'truss' | 'size' | 'results' | 'blinds' | 'addon' | 'summary';
 
 // ... (in SkylightSelector)
@@ -94,13 +92,13 @@ const TRUSS_OPTIONS = [
 ];
 
 
-export default function SkylightSelector() {
-    const isBunningsPartner = typeof window !== 'undefined' && 
-        (window.location.hostname === 'bunnings.skylightselector.co.nz' || 
-         String(import.meta.env.VITE_PARTNER).toUpperCase() === 'BUNNINGS' || 
-         String(import.meta.env.VITE_FORCE_CUSTOMER).toUpperCase() === 'BUNNINGS-NZ' || 
-         String(import.meta.env.VITE_FORCE_CUSTOMER).toUpperCase() === 'BUNNINGS' || 
-         String(import.meta.env.VITE_FORCE_CUSTOMER).toUpperCase() === 'TRUE');
+interface SkylightSelectorProps {
+    customerId?: string;
+    customerMapping?: Record<string, string> | null;
+}
+
+export default function SkylightSelector({ customerId = 'velux', customerMapping = null }: SkylightSelectorProps) {
+    const isBunningsPartner = customerId === 'bunnings';
 
     const [step, setStep] = useState<StepId>('product-type');
     const [history, setHistory] = useState<StepId[]>([]);
@@ -1127,8 +1125,8 @@ export default function SkylightSelector() {
 
     const renderSummaryStep = () => {
         const getPartnerCode = (code: string, blockLayout = false) => {
-            if (isBunningsPartner) {
-                const mapped = (bunningsMapping as Record<string, string>)[code];
+            if (customerMapping) {
+                const mapped = customerMapping[code];
                 if (mapped && mapped !== 'Not Available' && mapped !== '#REF!') {
                     return (
                         <>

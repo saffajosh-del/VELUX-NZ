@@ -98,7 +98,7 @@ interface SkylightSelectorProps {
 }
 
 export default function SkylightSelector({ customerId = 'velux', customerMapping = null }: SkylightSelectorProps) {
-    const isBunningsPartner = customerId === 'bunnings';
+    const partnerName = customerId !== 'velux' ? customerId.charAt(0).toUpperCase() + customerId.slice(1) : '';
 
     const [step, setStep] = useState<StepId>('product-type');
     const [history, setHistory] = useState<StepId[]>([]);
@@ -1400,14 +1400,14 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
     return (
         <div className="max-w-2xl mx-auto w-full min-h-screen py-10 px-4 flex flex-col font-sans">
             {/* Header - Minimalist */}
-            {isBunningsPartner ? (
+            {(customerId !== 'velux') ? (
                 <div className="mb-12 flex justify-center items-center w-full">
                     <div className="flex-1 flex justify-end pr-4">
                         <img src="/velux logo.svg" alt="VELUX" className="h-16 object-contain" />
                     </div>
                     <div className="h-16 w-px bg-gray-300 shrink-0"></div>
                     <div className="flex-1 flex justify-start pl-4">
-                        <img src="/bunnings-logo.png" alt="Bunnings" className="h-16 object-contain" />
+                        <img src={`/${customerId}-logo.png`} alt={partnerName} className="h-16 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                     </div>
                 </div>
             ) : (

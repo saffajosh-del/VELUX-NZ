@@ -13,7 +13,6 @@ function App() {
     const loadConfig = async () => {
       if (customerId && customerId !== 'velux') {
         try {
-          // @ts-expect-error - Dynamic import for customer mapping
           const mapping = await import(`./data/${customerId}-mapping.json`);
           setCustomerMapping(mapping.default || mapping);
         } catch (e) {

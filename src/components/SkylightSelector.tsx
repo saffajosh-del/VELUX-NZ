@@ -1407,7 +1407,7 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
                     </div>
                     <div className="h-16 w-px bg-gray-300 shrink-0"></div>
                     <div className="flex-1 flex justify-start pl-4">
-                        <img src={`/${customerId}-logo.png`} alt={partnerName} className={`object-contain ${customerId === 'itm' ? 'h-24' : 'h-16'}`} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                        <img src={`/${customerId}-logo.png`} alt={partnerName} className="h-16 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                     </div>
                 </div>
             ) : (

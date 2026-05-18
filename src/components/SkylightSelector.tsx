@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Check, ArrowLeft, Printer } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-type StepId = 'product-type' | 'pitch' | 'material' | 'sun-tunnel-type' | 'roof-window-model' | 'opening' | 'truss' | 'size' | 'results' | 'blinds' | 'addon' | 'summary';
+type StepId = 'product-type' | 'pitch' | 'material' | 'sun-tunnel-type' | 'roof-window-model' | 'opening' | 'truss' | 'size' | 'results' | 'blinds' | 'manual-control' | 'addon' | 'summary';
 
 // ... (in SkylightSelector)
 
@@ -27,6 +27,7 @@ interface SelectionState {
     selectedBlind: string | null; // Blind ID
     selectedInsectScreen: boolean;
     selectedAddon: string | null;
+    selectedManualControls: string[];
 }
 
 const PRODUCT_TYPE_OPTIONS = [
@@ -115,6 +116,7 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
         selectedBlind: null,
         selectedInsectScreen: false,
         selectedAddon: null,
+        selectedManualControls: [],
     });
 
     // Helpers to move between steps
@@ -421,7 +423,13 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
         // Use a small timeout to let the state update or just direct call if nextStep doesn't depend on immediate render of selection
         // Actually nextStep just changes 'step' state, so it's fine.
         // But we want the selection to stick.
-        setTimeout(() => nextStep('summary'), 0);
+        setTimeout(() => {
+            if (selection.openingType === 'manual') {
+                nextStep('manual-control');
+            } else {
+                nextStep('summary');
+            }
+        }, 0);
     };
 
     const toggleInsectScreen = () => {
@@ -429,7 +437,22 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
     };
 
     const handleUpgradesComplete = () => {
-        nextStep('summary');
+        if (selection.openingType === 'manual') {
+            nextStep('manual-control');
+        } else {
+            nextStep('summary');
+        }
+    };
+
+    const handleManualControlSelect = (id: string) => {
+        setSelection(prev => {
+            const controls = prev.selectedManualControls || [];
+            if (controls.includes(id)) {
+                return { ...prev, selectedManualControls: controls.filter(c => c !== id) };
+            } else {
+                return { ...prev, selectedManualControls: [...controls, id] };
+            }
+        });
     };
 
 
@@ -1079,6 +1102,62 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
         );
     };
 
+    const renderManualControlStep = () => {
+        const isVS = selection.selectedProduct === 'vs';
+        const isVCM = selection.selectedProduct === 'vcm';
+        
+        let controls: {id: string, name: string, code: string, desc: string, price: number}[] = [];
+        if (isVS) {
+            controls = [
+                { id: 'zzz201', name: 'Winder Handle', code: 'ZZZ 201', desc: 'For skylights within arms reach', price: 70 },
+                { id: 'zct300', name: 'Extendable Rod Control', code: 'ZCT 300', desc: 'For skylights out of arms reach (145 - 285cm in length)', price: 90 }
+            ];
+        } else if (isVCM) {
+            controls = [
+                { id: 'zzz212', name: 'Winder Handle', code: 'ZZZ 212', desc: 'For skylights within arms reach', price: 70 },
+                { id: 'zct300', name: 'Extendable Rod Control', code: 'ZCT 300', desc: 'For skylights out of arms reach (145 - 285cm in length)', price: 90 }
+            ];
+        }
+
+        return (
+            <div className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {controls.map((control) => {
+                        const isSelected = selection.selectedManualControls?.includes(control.id);
+                        return (
+                            <Card
+                                key={control.id}
+                                className={`cursor-pointer transition-all hover:border-primary/50 overflow-hidden group ${isSelected ? 'ring-2 ring-primary border-primary' : ''}`}
+                                onClick={() => handleManualControlSelect(control.id)}
+                            >
+                                <CardContent className="p-0 flex flex-col items-center text-center h-full">
+                                    <div className="p-6 flex flex-col items-center justify-center w-full min-h-[200px]">
+                                        <div className="mb-2">
+                                            <h3 className="font-bold text-xl mb-1">{control.name}</h3>
+                                            <p className="text-sm font-medium text-muted-foreground">({control.code})</p>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground mb-4 flex-1">
+                                            {control.desc}
+                                        </p>
+                                        <div className="text-xl font-bold text-primary mb-4">${control.price}</div>
+                                        <div className={`px-6 py-2 rounded-full text-sm font-bold w-full max-w-[200px] mx-auto ${isSelected ? 'bg-primary text-white' : 'bg-primary/10 text-primary'}`}>
+                                            {isSelected ? 'Added' : 'Click to Add'}
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        );
+                    })}
+                </div>
+                <div className="flex justify-center mt-8">
+                    <Button size="lg" onClick={() => nextStep('summary')} className="w-full md:w-auto md:min-w-[200px]">
+                        Continue to Summary
+                    </Button>
+                </div>
+            </div>
+        );
+    };
+
     const handleAddonSelect = (addonId: string | null) => {
         setSelection({ ...selection, selectedAddon: addonId });
     };
@@ -1243,7 +1322,17 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
             }
         }
 
-        const total = basePrice + flashingPrice + blindPrice + accessoryPrice + screenPrice + addonPrice;
+        // Manual Controls Logic
+        let manualControlsPrice = 0;
+        if (selection.selectedManualControls && selection.selectedManualControls.length > 0) {
+            selection.selectedManualControls.forEach(id => {
+                if (id === 'zzz201') manualControlsPrice += 70;
+                if (id === 'zzz212') manualControlsPrice += 70;
+                if (id === 'zct300') manualControlsPrice += 90;
+            });
+        }
+
+        const total = basePrice + flashingPrice + blindPrice + accessoryPrice + screenPrice + addonPrice + manualControlsPrice;
 
         return (
             <div className="space-y-6">
@@ -1339,6 +1428,23 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
                                         <span>${accessoryPrice}</span>
                                     </div>
                                 )}
+                                {selection.selectedManualControls?.map(controlId => {
+                                    let code = '';
+                                    let name = '';
+                                    let price = 0;
+                                    if (controlId === 'zzz201') { code = 'ZZZ 201'; name = 'Winder Handle'; price = 70; }
+                                    if (controlId === 'zzz212') { code = 'ZZZ 212'; name = 'Winder Handle'; price = 70; }
+                                    if (controlId === 'zct300') { code = 'ZCT 300'; name = 'Extendable Rod Control'; price = 90; }
+                                    return (
+                                        <div key={controlId} className="flex justify-between text-sm items-start">
+                                            <div>
+                                                <div>{getPartnerCode(code)}</div>
+                                                <div className="text-muted-foreground mt-0.5">{name}</div>
+                                            </div>
+                                            <span>${price}</span>
+                                        </div>
+                                    );
+                                })}
                             </div>
 
                             <div className="flex justify-between py-4 border-t border-b text-xl font-bold mt-4">
@@ -1389,6 +1495,7 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
             case 'size': return selection.productCategory === 'roof-window' ? 'Select Window Size' : 'Select Skylight Size';
             case 'results': return 'Selection Results';
             case 'blinds': return selection.productCategory === 'roof-window' ? 'Choose Upgrades' : 'Do you require blinds?';
+            case 'manual-control': return 'Select Manual Controls';
             case 'addon': return 'Add Rigid Extension?';
             case 'summary': return 'Selection Summary';
             default: return '';
@@ -1457,6 +1564,7 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
                         {step === 'size' && renderSizeStep()}
                         {step === 'results' && renderResultsStep()}
                         {step === 'blinds' && renderBlindsStep()}
+                        {step === 'manual-control' && renderManualControlStep()}
                         {step === 'addon' && renderAddonStep()}
                         {step === 'summary' && renderSummaryStep()}
                     </motion.div>

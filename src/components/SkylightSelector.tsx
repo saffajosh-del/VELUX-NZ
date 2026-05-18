@@ -1134,12 +1134,10 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
                                     <div className="p-6 flex flex-col items-center justify-center w-full min-h-[200px]">
                                         <div className="mb-2">
                                             <h3 className="font-bold text-xl mb-1">{control.name}</h3>
-                                            <p className="text-sm font-medium text-muted-foreground">({control.code})</p>
                                         </div>
-                                        <p className="text-sm text-muted-foreground mb-4 flex-1">
+                                        <p className="text-sm text-muted-foreground mb-6 flex-1">
                                             {control.desc}
                                         </p>
-                                        <div className="text-xl font-bold text-primary mb-4">${control.price}</div>
                                         <div className={`px-6 py-2 rounded-full text-sm font-bold w-full max-w-[200px] mx-auto ${isSelected ? 'bg-primary text-white' : 'bg-primary/10 text-primary'}`}>
                                             {isSelected ? 'Added' : 'Click to Add'}
                                         </div>

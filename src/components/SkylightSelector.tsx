@@ -1379,9 +1379,9 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
                                         <span>${blindPrice}</span>
                                     </div>
                                 )}
-                                {(flashingPrice > 0 || flashingName.includes('Custom') || flashingName.includes('Integrated')) && (
+                                {(flashingPrice > 0 || flashingName.includes('Integrated')) && !flashingName.includes('Custom') && (
                                     <div className="flex justify-between text-sm items-start">
-                                        <div className={flashingName.includes('Custom') ? "font-bold text-red-600" : ""}>
+                                        <div>
                                             {flashingName.split('\n').map((line, i) => {
                                                 const match = line.match(/^(ED[LW] [A-Z0-9]+)/);
                                                 if (match) {
@@ -1443,6 +1443,15 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
                                         </div>
                                     );
                                 })}
+                                {flashingName.includes('Custom') && (
+                                    <div className="flex justify-between text-sm items-start mt-2">
+                                        <div className="font-bold text-red-600">
+                                            {flashingName.split('\n').map((line, i) => (
+                                                <div key={i}>{line}</div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="flex justify-between py-4 border-t border-b text-xl font-bold mt-4">

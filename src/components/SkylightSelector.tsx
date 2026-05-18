@@ -1403,7 +1403,9 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
             {(customerId !== 'velux') ? (
                 <div className="mb-12 flex justify-center items-center w-full">
                     <div className="flex-1 flex justify-end pr-4">
-                        <img src="/velux logo.svg" alt="VELUX" className="h-16 object-contain" />
+                        <a href={typeof window !== 'undefined' ? window.location.pathname : '/'}>
+                            <img src="/velux logo.svg" alt="VELUX" className="h-16 object-contain" />
+                        </a>
                     </div>
                     <div className="h-16 w-px bg-gray-300 shrink-0"></div>
                     <div className="flex-1 flex justify-start pl-4">
@@ -1412,7 +1414,9 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
                 </div>
             ) : (
                 <div className="mb-12 text-center">
-                    <img src="/velux logo.svg" alt="VELUX" className="h-16 mx-auto mb-2" />
+                    <a href={typeof window !== 'undefined' ? window.location.pathname : '/'}>
+                        <img src="/velux logo.svg" alt="VELUX" className="h-16 mx-auto mb-2" />
+                    </a>
                 </div>
             )}
 

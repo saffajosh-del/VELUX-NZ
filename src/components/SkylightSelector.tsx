@@ -571,10 +571,10 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
                 <button
                     key={m}
                     onClick={() => selectModelFastForward(m)}
-                    className={`p-6 border rounded-xl text-center transition-all flex flex-col justify-center items-center h-28 ${isSelected ? 'border-primary bg-primary/5 ring-2 ring-primary' : 'border-border bg-white hover:border-primary/50'}`}
+                    className={`p-3 border rounded-xl text-center transition-all flex flex-col justify-center items-center h-20 ${isSelected ? 'border-primary bg-primary/5 ring-2 ring-primary' : 'border-border bg-white hover:border-primary/50'}`}
                 >
-                    <span className="text-xl font-bold text-foreground">{m}</span>
-                    <span className="text-xs text-muted-foreground mt-1">{label}</span>
+                    <span className="text-lg font-bold text-foreground">{m}</span>
+                    <span className="text-xs text-muted-foreground mt-0.5">{label}</span>
                 </button>
             );
         };
@@ -639,9 +639,9 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
                                     <button
                                         key={code}
                                         onClick={() => handleSizeSelect(code)}
-                                        className="p-4 border border-border bg-white rounded-xl text-center hover:border-primary/50 transition-all flex flex-col justify-center items-center h-20 group"
+                                        className="p-3 border border-border bg-white rounded-xl text-center hover:border-primary/50 transition-all flex flex-col justify-center items-center h-16 group"
                                     >
-                                        <span className="text-base font-bold text-foreground group-hover:text-primary transition-colors">{code}</span>
+                                        <span className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">{code}</span>
                                         <span className="text-xs text-muted-foreground mt-0.5">{sizeInfo.width} x {sizeInfo.height}mm</span>
                                     </button>
                                 );

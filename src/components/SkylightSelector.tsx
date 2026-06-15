@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Check, ArrowLeft, Printer } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-type StepId = 'product-type' | 'pitch' | 'material' | 'sun-tunnel-type' | 'roof-window-model' | 'opening' | 'truss' | 'size' | 'results' | 'blinds' | 'manual-control' | 'addon' | 'summary';
+type StepId = 'product-type' | 'pitch' | 'material' | 'sun-tunnel-type' | 'roof-window-model' | 'opening' | 'truss' | 'size' | 'results' | 'blinds' | 'manual-control' | 'model-variant' | 'model-size' | 'model-variant-and-size' | 'addon' | 'summary';
 
 // ... (in SkylightSelector)
 
@@ -272,64 +272,42 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
     // ----------------------------------------------------------------------------
 
     const handleProductTypeSelect = (id: string) => {
-        setSelection({ ...selection, productCategory: id as any });
-        if (id === 'skylight') {
-            nextStep('pitch');
-        } else if (id === 'sun-tunnel') {
-            nextStep('pitch');
-        } else if (id === 'roof-window') {
-            // Roof Windows are always pitched (15-90 degrees)
-            setSelection(prev => ({ ...prev, productCategory: 'roof-window', roofPitch: 'pitched', roofType: 'tiled' }));
-            // We default to 'tiled' (EDW) but better to ask Material as 'wide-metal' might check constraints?
-            // Actually, let's ask Material.
-            nextStep('material');
-        }
+        setSelection(prev => ({ ...prev, productCategory: id as any }));
+        nextStep('material');
     };
 
     const handlePitchSelect = (id: string) => {
-        setSelection({ ...selection, roofPitch: id as any, roofType: id === 'flat' ? 'flat' : null });
+        setSelection(prev => ({
+            ...prev,
+            roofPitch: id as any,
+            roofType: id === 'flat' ? 'flat' : prev.roofType
+        }));
 
         if (selection.productCategory === 'sun-tunnel') {
             if (id === 'flat') {
-                // Flat roof Sun Tunnel -> TCR (Must use TCR)
-                setSelection(prev => ({ ...prev, selectedProduct: 'tcr', sizeCode: '014' }));
+                setSelection(prev => ({ ...prev, selectedProduct: 'tcr', sizeCode: '014', roofType: 'flat' }));
                 nextStep('results');
             } else {
-                // Pitched roof Sun Tunnel -> Ask for Material
-                nextStep('material');
-            }
-        } else {
-            // Skylight flow
-            if (id === 'flat') {
-                nextStep('opening');
-            } else {
-                nextStep('material');
-            }
-        }
-    };
-
-    const handleMaterialSelect = (id: string) => {
-        const mappedType = id === 'tiled-corrugated' ? 'tiled' : id === 'slate-shingle' ? 'slate' : 'wide-metal';
-        setSelection({ ...selection, roofMaterial: id as any, roofType: mappedType });
-
-        if (selection.productCategory === 'sun-tunnel') {
-            if (id === 'wide-metal') {
-                // Metal Roofs: MUST use TCR
-                setSelection(prev => ({ ...prev, selectedProduct: 'tcr', sizeCode: '014', roofType: 'wide-metal' }));
-                nextStep('results');
-            } else {
-                // Tiled Roofs: Use TWF or TWR
-                nextStep('sun-tunnel-type');
+                // Pitched roof
+                if (selection.roofType === 'wide-metal') {
+                    setSelection(prev => ({ ...prev, selectedProduct: 'tcr', sizeCode: '014' }));
+                    nextStep('results');
+                } else {
+                    nextStep('sun-tunnel-type');
+                }
             }
         } else if (selection.productCategory === 'roof-window') {
-            // Roof Window Flow
-            // EDW is for Tile/Corrugated. If Wide Metal, maybe warn?
-            // But for now, let's just proceed to Model Selection
             nextStep('roof-window-model');
         } else {
             // Skylight flow
             nextStep('opening');
         }
+    };
+
+    const handleMaterialSelect = (id: string) => {
+        const mappedType = id === 'tiled-corrugated' ? 'tiled' : id === 'slate-shingle' ? 'slate' : 'wide-metal';
+        setSelection(prev => ({ ...prev, roofMaterial: id as any, roofType: mappedType }));
+        nextStep('pitch');
     };
 
     const handleSunTunnelTypeSelect = (type: 'rigid' | 'flexible') => {
@@ -361,12 +339,13 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
     };
 
     const handleSizeSelect = (code: string) => {
-        const results = validProducts.filter(p => p.compatibleSizes.includes(code));
-        const selectedProduct = results.length > 0 ? results[0].id : null;
-        setSelection({ ...selection, sizeCode: code, selectedProduct });
+        const activeProductId = selection.selectedProduct || (validProducts.filter(p => p.compatibleSizes.includes(code))[0]?.id || null);
+        setSelection(prev => ({ ...prev, sizeCode: code, selectedProduct: activeProductId }));
         
+        const isFlat = isFlatRoof || (activeProductId && ['fcm', 'vcm', 'vcs'].includes(activeProductId));
+
         let skipBlinds = false;
-        if (isFlatRoof && selectedProduct === 'fcm') {
+        if (isFlat && activeProductId === 'fcm') {
             const zzz199 = ACCESSORIES.find(a => a.id === 'zzz199');
             if (zzz199) {
                 const prices = zzz199.prices as unknown as Record<string, number>;
@@ -377,7 +356,11 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
         }
         
         if (skipBlinds) {
-            nextStep('summary');
+            if (selection.openingType === 'manual') {
+                nextStep('manual-control');
+            } else {
+                nextStep('summary');
+            }
         } else {
             nextStep('blinds');
         }
@@ -502,20 +485,317 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
     );
 
     const renderPitchStep = () => (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {PITCH_OPTIONS.map((opt) => (
-                <button
-                    key={opt.id}
-                    onClick={() => handlePitchSelect(opt.id)}
-                    className="flex flex-col items-center justify-center p-8 bg-white border border-border rounded-xl shadow-sm hover:shadow-md hover:border-primary/50 transition-all group"
-                >
-                    <span className="text-4xl mb-4 grayscale group-hover:grayscale-0 transition-all">{opt.icon}</span>
-                    <span className="text-lg font-medium text-foreground">{opt.label}</span>
-                    {opt.subLabel && <span className="text-sm text-muted-foreground mt-1">{opt.subLabel}</span>}
-                </button>
-            ))}
+        <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {PITCH_OPTIONS.map((opt) => (
+                    <button
+                        key={opt.id}
+                        onClick={() => handlePitchSelect(opt.id)}
+                        className="flex flex-col items-center justify-center p-8 bg-white border border-border rounded-xl shadow-sm hover:shadow-md hover:border-primary/50 transition-all group"
+                    >
+                        <span className="text-4xl mb-4 grayscale group-hover:grayscale-0 transition-all">{opt.icon}</span>
+                        <span className="text-lg font-medium text-foreground">{opt.label}</span>
+                        {opt.subLabel && <span className="text-sm text-muted-foreground mt-1">{opt.subLabel}</span>}
+                    </button>
+                ))}
+            </div>
+
+            <div className="border-t pt-6 mt-6 space-y-4">
+                <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wider text-center">Know exactly what you need?</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button
+                        onClick={() => nextStep('model-variant')}
+                        className="flex flex-col items-center justify-center p-6 bg-white border border-border rounded-xl shadow-sm hover:shadow-md hover:border-primary/50 transition-all group text-center"
+                    >
+                        <span className="text-lg font-medium text-foreground group-hover:text-primary transition-colors">I already know the model variant</span>
+                        <span className="text-xs text-muted-foreground mt-1">Select the model (e.g. FS, VCS) then choose size</span>
+                    </button>
+                    <button
+                        onClick={() => nextStep('model-variant-and-size')}
+                        className="flex flex-col items-center justify-center p-6 bg-white border border-border rounded-xl shadow-sm hover:shadow-md hover:border-primary/50 transition-all group text-center"
+                    >
+                        <span className="text-lg font-medium text-foreground group-hover:text-primary transition-colors">I already know the model variant and size</span>
+                        <span className="text-xs text-muted-foreground mt-1">Select model and size in a single view</span>
+                    </button>
+                </div>
+            </div>
         </div>
     );
+
+    const selectModelFastForward = (modelName: string) => {
+        const prod = PRODUCTS.find(p => p.model === modelName);
+        if (prod) {
+            const isFlat = prod.roofType.includes('flat') && !prod.roofType.includes('pitched');
+            const isPitched = prod.roofType.includes('pitched') && !prod.roofType.includes('flat');
+            
+            let resolvedPitch = selection.roofPitch;
+            let resolvedType = selection.roofType;
+            
+            if (isFlat) {
+                resolvedPitch = 'flat';
+                resolvedType = 'flat';
+            } else if (isPitched) {
+                resolvedPitch = 'pitched';
+                const id = selection.roofMaterial;
+                const mappedType = id === 'tiled-corrugated' ? 'tiled' : id === 'slate-shingle' ? 'slate' : 'wide-metal';
+                resolvedType = mappedType;
+            } else if (modelName === 'TCR') {
+                if (selection.roofPitch === 'flat') {
+                    resolvedPitch = 'flat';
+                    resolvedType = 'flat';
+                } else {
+                    resolvedPitch = 'pitched';
+                    const id = selection.roofMaterial;
+                    const mappedType = id === 'tiled-corrugated' ? 'tiled' : id === 'slate-shingle' ? 'slate' : 'wide-metal';
+                    resolvedType = mappedType;
+                }
+            }
+            
+            setSelection(prev => ({
+                ...prev,
+                selectedProduct: prod.id,
+                openingType: prod.openingType,
+                roofPitch: resolvedPitch as any,
+                roofType: resolvedType as any,
+                sizeCode: null,
+                selectedBlind: null
+            }));
+        }
+    };
+
+    const renderModelVariantStep = () => {
+        const handleModelSelect = (modelName: string) => {
+            selectModelFastForward(modelName);
+            nextStep('model-size');
+        };
+
+        if (selection.productCategory === 'roof-window') {
+            return (
+                <div className="space-y-6">
+                    <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">Roof Windows</div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {['GGL', 'GPL'].map(m => {
+                            const p = PRODUCTS.find(prod => prod.model === m);
+                            return (
+                                <button
+                                    key={m}
+                                    onClick={() => handleModelSelect(m)}
+                                    className="p-6 bg-white border border-border rounded-xl shadow-sm hover:shadow-md hover:border-primary/50 transition-all text-center flex flex-col justify-center items-center h-32 group"
+                                >
+                                    <span className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">{m}</span>
+                                    <span className="text-xs text-muted-foreground mt-1">{p?.name.split('(')[0].trim()}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+        }
+
+        if (selection.productCategory === 'sun-tunnel') {
+            return (
+                <div className="space-y-6">
+                    <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">Sun Tunnels</div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {['TWR', 'TWF', 'TCR'].map(m => {
+                            const p = PRODUCTS.find(prod => prod.model === m);
+                            return (
+                                <button
+                                    key={m}
+                                    onClick={() => handleModelSelect(m)}
+                                    className="p-6 bg-white border border-border rounded-xl shadow-sm hover:shadow-md hover:border-primary/50 transition-all text-center flex flex-col justify-center items-center h-32 group"
+                                >
+                                    <span className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">{m}</span>
+                                    <span className="text-xs text-muted-foreground mt-1">{p?.name.split('(')[0].trim()}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+        }
+
+        return (
+            <div className="space-y-8">
+                <div>
+                    <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Pitched Roof Skylights</div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {['FS', 'VS', 'VSS', 'VSE'].map(m => {
+                            return (
+                                <button
+                                    key={m}
+                                    onClick={() => handleModelSelect(m)}
+                                    className="p-6 bg-white border border-border rounded-xl shadow-sm hover:shadow-md hover:border-primary/50 transition-all text-center flex flex-col justify-center items-center h-28 group"
+                                >
+                                    <span className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">{m}</span>
+                                    <span className="text-xs text-muted-foreground mt-1">{m === 'FS' ? 'Fixed' : m === 'VS' ? 'Manual' : m === 'VSS' ? 'Solar' : 'Electric'}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                <div>
+                    <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Flat Roof Skylights</div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {['FCM', 'VCM', 'VCS'].map(m => {
+                            return (
+                                <button
+                                    key={m}
+                                    onClick={() => handleModelSelect(m)}
+                                    className="p-6 bg-white border border-border rounded-xl shadow-sm hover:shadow-md hover:border-primary/50 transition-all text-center flex flex-col justify-center items-center h-28 group"
+                                >
+                                    <span className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">{m}</span>
+                                    <span className="text-xs text-muted-foreground mt-1">{m === 'FCM' ? 'Fixed' : m === 'VCM' ? 'Manual' : 'Solar'}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    const renderModelSizeStep = () => {
+        const product = PRODUCTS.find(p => p.id === selection.selectedProduct);
+        if (!product) return null;
+
+        const isProductFlat = product.roofType.includes('flat') && !product.roofType.includes('pitched');
+        const isProductWindow = selection.productCategory === 'roof-window';
+        
+        const sizesSource = isProductWindow
+            ? ROOF_WINDOW_SIZES
+            : (isProductFlat ? FLAT_SIZES : PITCHED_SIZES);
+
+        return (
+            <div className="space-y-6">
+                <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                    Available Sizes for {product.model}
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {product.compatibleSizes.map(code => {
+                        const sizeInfo = sizesSource.find(s => s.code === code);
+                        if (!sizeInfo) return null;
+                        return (
+                            <button
+                                key={code}
+                                onClick={() => handleSizeSelect(code)}
+                                className="p-6 bg-white border border-border rounded-xl shadow-sm hover:shadow-md hover:border-primary/50 transition-all text-center flex flex-col justify-center items-center group"
+                            >
+                                <span className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">{code}</span>
+                                <span className="text-xs text-muted-foreground mt-1">{sizeInfo.width} x {sizeInfo.height}mm</span>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+        );
+    };
+
+    const renderModelVariantAndSizeStep = () => {
+        const product = PRODUCTS.find(p => p.id === selection.selectedProduct);
+        
+        let models: string[] = [];
+        if (selection.productCategory === 'roof-window') models = ['GGL', 'GPL'];
+        else if (selection.productCategory === 'sun-tunnel') models = ['TWR', 'TWF', 'TCR'];
+        else models = ['FS', 'VS', 'VSS', 'VSE', 'FCM', 'VCM', 'VCS'];
+
+        const isProductFlat = product?.roofType.includes('flat') && !product?.roofType.includes('pitched');
+        const isProductWindow = selection.productCategory === 'roof-window';
+        
+        const sizesSource = isProductWindow
+            ? ROOF_WINDOW_SIZES
+            : (isProductFlat ? FLAT_SIZES : PITCHED_SIZES);
+
+        const isContinueEnabled = !!selection.selectedProduct && !!selection.sizeCode;
+        let continueLabel = 'Continue to Blinds';
+        if (isContinueEnabled && product) {
+            const activeProductId = product.id;
+            const code = selection.sizeCode!;
+            const isFlat = isFlatRoof || (activeProductId && ['fcm', 'vcm', 'vcs'].includes(activeProductId));
+
+            let skipBlinds = false;
+            if (isFlat && activeProductId === 'fcm') {
+                const zzz199 = ACCESSORIES.find(a => a.id === 'zzz199');
+                if (zzz199) {
+                    const prices = zzz199.prices as unknown as Record<string, number>;
+                    if (!prices[code]) {
+                        skipBlinds = true;
+                    }
+                }
+            }
+            if (selection.productCategory === 'sun-tunnel') {
+                skipBlinds = true;
+            }
+            if (skipBlinds) {
+                continueLabel = 'Continue to Summary';
+            }
+        }
+
+        const handleContinue = () => {
+            if (selection.sizeCode) {
+                handleSizeSelect(selection.sizeCode);
+            }
+        };
+
+        return (
+            <div className="space-y-8">
+                <div>
+                    <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">1. Select Model</div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
+                        {models.map(m => {
+                            const isSelected = product?.model === m;
+                            return (
+                                <button
+                                    key={m}
+                                    onClick={() => {
+                                        selectModelFastForward(m);
+                                    }}
+                                    className={`p-3 border rounded-lg text-center transition-all ${isSelected ? 'border-primary bg-primary/5 ring-1 ring-primary font-bold text-primary' : 'border-border bg-white hover:border-primary/50'}`}
+                                >
+                                    <span className="text-base">{m}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {product && (
+                    <div>
+                        <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">2. Select Size</div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                            {product.compatibleSizes.map(code => {
+                                const sizeInfo = sizesSource.find(s => s.code === code);
+                                if (!sizeInfo) return null;
+                                const isSelected = selection.sizeCode === code;
+                                return (
+                                    <button
+                                        key={code}
+                                        onClick={() => setSelection(prev => ({ ...prev, sizeCode: code }))}
+                                        className={`p-4 border rounded-xl text-center transition-all flex flex-col justify-center items-center h-20 ${isSelected ? 'border-primary bg-primary/5 ring-2 ring-primary' : 'border-border bg-white hover:border-primary/50'}`}
+                                    >
+                                        <span className="text-base font-bold text-foreground">{code}</span>
+                                        <span className="text-xs text-muted-foreground mt-0.5">{sizeInfo.width} x {sizeInfo.height}mm</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                <div className="flex justify-center border-t pt-6 mt-6">
+                    <Button
+                        size="lg"
+                        disabled={!isContinueEnabled}
+                        onClick={handleContinue}
+                        className="w-full md:w-auto px-12"
+                    >
+                        {continueLabel}
+                    </Button>
+                </div>
+            </div>
+        );
+    };
 
     const renderMaterialStep = () => (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1507,6 +1787,9 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
             case 'results': return 'Selection Results';
             case 'blinds': return selection.productCategory === 'roof-window' ? 'Choose Upgrades' : 'Do you require blinds?';
             case 'manual-control': return 'Select Manual Controls';
+            case 'model-variant': return 'Select Model Variant';
+            case 'model-size': return 'Select Size';
+            case 'model-variant-and-size': return 'Select Model & Size';
             case 'addon': return 'Add Rigid Extension?';
             case 'summary': return 'Selection Summary';
             default: return '';
@@ -1576,6 +1859,9 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
                         {step === 'results' && renderResultsStep()}
                         {step === 'blinds' && renderBlindsStep()}
                         {step === 'manual-control' && renderManualControlStep()}
+                        {step === 'model-variant' && renderModelVariantStep()}
+                        {step === 'model-size' && renderModelSizeStep()}
+                        {step === 'model-variant-and-size' && renderModelVariantAndSizeStep()}
                         {step === 'addon' && renderAddonStep()}
                         {step === 'summary' && renderSummaryStep()}
                     </motion.div>

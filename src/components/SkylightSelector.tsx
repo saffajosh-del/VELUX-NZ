@@ -93,13 +93,28 @@ const TRUSS_OPTIONS = [
 ];
 
 
+interface DealerInfo {
+    name: string;
+    url: string;
+}
+
+const DEALER_INFO: Record<string, DealerInfo> = {
+    'placemakers': { name: 'PlaceMakers', url: 'https://www.placemakers.co.nz/online/projects/velux-skylights' },
+    'bunnings': { name: 'Bunnings', url: 'https://www.bunnings.co.nz/brands/v/velux-skylights' },
+    'mitre10': { name: 'Mitre 10', url: 'https://www.mitre10.co.nz/search?q=velux' },
+    'carters': { name: 'Carters', url: 'https://carters.co.nz/' },
+    'itm': { name: 'ITM', url: 'https://www.itm.co.nz/' },
+};
+
 interface SkylightSelectorProps {
     customerId?: string;
     customerMapping?: Record<string, string> | null;
 }
 
 export default function SkylightSelector({ customerId = 'velux', customerMapping = null }: SkylightSelectorProps) {
-    const partnerName = customerId !== 'velux' ? customerId.charAt(0).toUpperCase() + customerId.slice(1) : '';
+    const dealerInfo = DEALER_INFO[customerId.toLowerCase()];
+    const partnerName = dealerInfo?.name || (customerId !== 'velux' ? customerId.charAt(0).toUpperCase() + customerId.slice(1) : '');
+
 
     const [step, setStep] = useState<StepId>('product-type');
     const [history, setHistory] = useState<StepId[]>([]);
@@ -1627,6 +1642,19 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
                             )}
                         </div>
                     </div>
+
+                    {customerId !== 'velux' && dealerInfo && (
+                        <div className="mt-8 pt-6 border-t border-gray-100 text-center no-print">
+                            <p className="text-muted-foreground text-sm mb-3">
+                                Click the button below to view our Skylights at {dealerInfo.name}
+                            </p>
+                            <Button asChild className="w-full">
+                                <a href={dealerInfo.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
+                                    View Skylights at {dealerInfo.name}
+                                </a>
+                            </Button>
+                        </div>
+                    )}
 
                     <div className="flex gap-4 mt-8 no-print">
                         <Button variant="outline" onClick={() => handleExportPDF()} className="flex-1">

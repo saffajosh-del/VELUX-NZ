@@ -1643,18 +1643,7 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
                         </div>
                     </div>
 
-                    {customerId !== 'velux' && dealerInfo && (
-                        <div className="mt-8 pt-6 border-t border-gray-100 text-center no-print">
-                            <p className="text-muted-foreground text-sm mb-3">
-                                Click the button below to view our Skylights at {dealerInfo.name}
-                            </p>
-                            <Button asChild className="w-full">
-                                <a href={dealerInfo.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
-                                    View Skylights at {dealerInfo.name}
-                                </a>
-                            </Button>
-                        </div>
-                    )}
+
 
                     <div className="flex gap-4 mt-8 no-print">
                         <Button variant="outline" onClick={() => handleExportPDF()} className="flex-1">

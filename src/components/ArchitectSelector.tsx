@@ -938,26 +938,6 @@ export default function ArchitectSelector() {
                                         </div>
                                     </div>
 
-                                    {/* Insect screen selection for roof windows */}
-                                    {(selection.selectedProduct?.id.startsWith('ggu') || (selection.productCategory as string) === 'roof-window') && (
-                                        <div className="flex items-center justify-between border-t pt-4 border-dashed border-border">
-                                            <div>
-                                                <h4 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Insect Screen (ZIL)</h4>
-                                                <p className="text-[10px] text-muted-foreground mt-1">Anodized aluminum framing with fibreglass mesh.</p>
-                                            </div>
-                                            <button
-                                                onClick={() => setSelection({ ...selection, selectedInsectScreen: !selection.selectedInsectScreen })}
-                                                className={`px-4 py-2 text-xs rounded-lg border font-bold transition-all ${
-                                                    selection.selectedInsectScreen 
-                                                        ? 'bg-primary text-primary-foreground border-primary' 
-                                                        : 'bg-card text-foreground border-border hover:border-neutral-400'
-                                                }`}
-                                            >
-                                                {selection.selectedInsectScreen ? 'Included' : 'Add Insect Screen'}
-                                            </button>
-                                        </div>
-                                    )}
-
                                     {/* Accessory check boxes */}
                                     {ACCESSORIES.filter(a => a.compatibleModels.includes(selection.selectedProduct!.model) && (a.prices as unknown as Record<string, number>)[selection.sizeCode!] !== undefined).length > 0 && (
                                         <div className="border-t pt-4 border-dashed border-border space-y-3">

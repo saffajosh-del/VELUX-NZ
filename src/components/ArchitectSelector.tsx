@@ -1,14 +1,36 @@
 import { useState, useMemo } from 'react';
-import { PRODUCTS, PITCHED_SIZES, FLAT_SIZES, ROOF_WINDOW_SIZES, FLASHINGS, BLINDS, ACCESSORIES, type Product } from '@/data/products';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+    PRODUCTS, 
+    PITCHED_SIZES, 
+    FLAT_SIZES, 
+    ROOF_WINDOW_SIZES, 
+    FLASHINGS, 
+    BLINDS, 
+    ACCESSORIES
+} from '@/data/products';
+import type { Product } from '@/data/products';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Check, Download, FileText, Printer, ShieldCheck, Plus, Trash2, Copy, AlertCircle } from 'lucide-react';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { 
+    Check, 
+    Printer, 
+    Download, 
+    Plus, 
+    Trash2, 
+    Copy, 
+    FileSpreadsheet, 
+    Eye, 
+    EyeOff, 
+    Info, 
+    Sliders,
+    Building2
+} from 'lucide-react';
 
-export interface SelectionState {
-    productCategory: 'skylight' | 'sun-tunnel' | null;
+interface SelectionState {
+    productCategory: 'skylight' | 'roof-window' | 'sun-tunnel' | null;
     roofPitch: 'pitched' | 'flat' | null;
+    roofMaterial: 'tile' | 'corrugated' | 'trimdek' | 'klip-lok' | null;
     openingType: 'fixed' | 'manual' | 'electric' | 'solar' | null;
     sizeCode: string | null;
     selectedProduct: Product | null;
@@ -17,9 +39,9 @@ export interface SelectionState {
     selectedAccessories: string[];
 }
 
-export interface ScheduleItem {
+interface ScheduleItem {
     id: string;
-    mark: string;
+    mark: string; // e.g. SK-01
     product: Product;
     sizeCode: string;
     width: number;
@@ -38,9 +60,14 @@ export interface ScheduleItem {
 }
 
 export default function ArchitectSelector() {
+    // Tab state
+    const [activeTab, setActiveTab] = useState<'configure' | 'schedule'>('configure');
+    
+    // Spec selection state
     const [selection, setSelection] = useState<SelectionState>({
         productCategory: null,
         roofPitch: null,
+        roofMaterial: null,
         openingType: null,
         sizeCode: null,
         selectedProduct: null,
@@ -49,33 +76,21 @@ export default function ArchitectSelector() {
         selectedAccessories: [],
     });
 
+    // Schedule items state
     const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
     const [nextMarkNumber, setNextMarkNumber] = useState(1);
-    const [copiedMD, setCopiedMD] = useState(false);
-    const [showIncGst] = useState(true);
+    
+    // Toggle state for pricing visibility
+    const [showPricing, setShowPricing] = useState(false);
+    
+    // Alert / Toast state
+    const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-    // Read customer ID from path if present (e.g. /bunnings)
-    const pathParts = typeof window !== 'undefined' ? window.location.pathname.split('/').filter(Boolean) : [];
-    const customerId = pathParts.length > 0 && pathParts[0] !== 'spectool' ? pathParts[0].toLowerCase() : 'velux';
-
-    const partnerInfo = useMemo(() => {
-        switch (customerId) {
-            case 'placemakers':
-                return { name: 'PlaceMakers', logo: '/placemakers-logo.png', link: 'https://www.placemakers.co.nz' };
-            case 'carters':
-                return { name: 'Carters', logo: '/carters-logo.png', link: 'https://www.carters.co.nz' };
-            case 'bunnings':
-            case 'bunningsnz':
-                return { name: 'Bunnings NZ', logo: '/bunnings-logo.png', link: 'https://www.bunnings.co.nz' };
-            case 'mitre10':
-            case 'mitre10nz':
-                return { name: 'Mitre 10 NZ', logo: '/mitre10-logo.png', link: 'https://www.mitre10.co.nz' };
-            case 'itm':
-                return { name: 'ITM', logo: '/itm-logo.png', link: 'https://www.itm.co.nz' };
-            default:
-                return null;
-        }
-    }, [customerId]);
+    // Show temporary toast notification
+    const triggerToast = (msg: string) => {
+        setToastMessage(msg);
+        setTimeout(() => setToastMessage(null), 3000);
+    };
 
     // Filter products based on selected parameters
     const filteredProducts = useMemo(() => {
@@ -90,6 +105,7 @@ export default function ArchitectSelector() {
         });
     }, [selection.productCategory]);
 
+    // Available products after roof pitch selection
     const stepFilteredProducts = useMemo(() => {
         return filteredProducts.filter(p => {
             if (!selection.roofPitch) return true;
@@ -101,15 +117,23 @@ export default function ArchitectSelector() {
         });
     }, [filteredProducts, selection.roofPitch]);
 
+    // Available opening types based on current filters
     const availableOpeningTypes = useMemo(() => {
         const types = new Set<string>();
-        stepFilteredProducts.forEach(p => types.add(p.openingType));
+        stepFilteredProducts.forEach(p => {
+            types.add(p.openingType);
+        });
         return Array.from(types);
     }, [stepFilteredProducts]);
 
+    // Final list of products available for size selection
     const finalProductsList = useMemo(() => {
-        if (!selection.openingType) return [];
-        return stepFilteredProducts.filter(p => p.openingType === selection.openingType);
+        return stepFilteredProducts.filter(p => {
+            if (selection.openingType && p.openingType !== selection.openingType) {
+                return false;
+            }
+            return true;
+        });
     }, [stepFilteredProducts, selection.openingType]);
 
     // Sizes source for the selected product
@@ -249,158 +273,244 @@ export default function ArchitectSelector() {
 
         setSchedule([...schedule, newItem]);
         setNextMarkNumber(nextMarkNumber + 1);
+        triggerToast(`Added ${newItem.mark} (${prod.model} ${size.code}) to schedule!`);
     };
 
-    const removeItem = (id: string) => {
+    // Remove item from schedule
+    const handleRemoveFromSchedule = (id: string) => {
         setSchedule(schedule.filter(item => item.id !== id));
     };
 
-    const updateQty = (id: string, delta: number) => {
-        setSchedule(schedule.map(item => {
-            if (item.id === id) {
-                const newQty = Math.max(1, item.qty + delta);
-                return { ...item, qty: newQty };
-            }
-            return item;
-        }));
+    // Update quantity of scheduled item
+    const handleUpdateQty = (id: string, qty: number) => {
+        if (qty < 1) return;
+        setSchedule(schedule.map(item => item.id === id ? { ...item, qty } : item));
     };
 
-    const updateNotes = (id: string, notes: string) => {
+    // Update custom notes of scheduled item
+    const handleUpdateNotes = (id: string, notes: string) => {
         setSchedule(schedule.map(item => item.id === id ? { ...item, notes } : item));
     };
 
-    // Export formats
-    const exportCSV = () => {
-        const headers = ["Mark", "Model", "Opening", "Width (mm)", "Height (mm)", "Glazing", "R-Value", "SHGC", "Rw (dB)", "VLT", "Accessories", "Qty", "Unit RRP (NZD)", "Total RRP (NZD)", "Notes"];
-        const rows = schedule.map(i => [
-            i.mark,
-            `${i.product.model} ${i.sizeCode}`,
-            i.openingType,
-            i.width,
-            i.height,
-            `"${i.glazing}"`,
-            i.uValue,
-            i.shgc,
-            i.rw,
-            i.vlt,
-            `"${i.accessories.join('; ')}"`,
-            i.qty,
-            `"$${i.price.toLocaleString()} (inc. gst)"`,
-            `"$${(i.price * i.qty).toLocaleString()} (inc. gst)"`,
-            `"${i.notes}"`
-        ]);
+    // Update mark name (e.g. SK-01)
+    const handleUpdateMark = (id: string, mark: string) => {
+        setSchedule(schedule.map(item => item.id === id ? { ...item, mark } : item));
+    };
 
-        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    // Reset configuration wizard
+    const handleReset = () => {
+        setSelection({
+            productCategory: null,
+            roofPitch: null,
+            roofMaterial: null,
+            openingType: null,
+            sizeCode: null,
+            selectedProduct: null,
+            selectedBlind: null,
+            selectedInsectScreen: false,
+            selectedAccessories: [],
+        });
+    };
+
+    // Export Schedule to CSV
+    const exportCSV = () => {
+        if (schedule.length === 0) return;
+        
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "Mark,Model,Description,Size Code,Width (mm),Height (mm),Daylight Area (sqm),Glazing,R-Value,SHGC,Rw (Acoustic),BAL Rating,Accessories,Quantity,Notes";
+        if (showPricing) csvContent += ",Unit Price (RRP) (inc. gst),Total Price (RRP) (inc. gst)";
+        csvContent += "\n";
+
+        schedule.forEach(item => {
+            const dlArea = item.product.daylightArea?.[item.sizeCode] || 0;
+            const accessoriesStr = item.accessories.join(" | ");
+            
+            let row = `"${item.mark}","${item.product.model}","${item.product.name}","${item.sizeCode}",${item.width},${item.height},${dlArea},"${item.glazing}",${item.uValue},${item.shgc},${item.rw},"${item.balRating}","${accessoriesStr}",${item.qty},"${item.notes.replace(/"/g, '""')}"`;
+            if (showPricing) row += `,${item.price},${item.price * item.qty}`;
+            csvContent += row + "\n";
+        });
+
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `VELUX_NZ_Skylight_Schedule_${new Date().toISOString().slice(0,10)}.csv`);
+        link.setAttribute("download", "VELUX_NZ_Skylight_Schedule.csv");
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        triggerToast("Downloaded Skylight Schedule CSV!");
     };
 
-    const copyMarkdownTable = () => {
-        let md = "| Mark | Model | Size (W x H) | Glazing | R / SHGC | Rw | Accessories | Qty | Unit RRP (NZD) | Notes |\n";
-        md += "|---|---|---|---|---|---|---|---|---|---|\n";
-        schedule.forEach(i => {
-            const accs = i.accessories.length > 0 ? i.accessories.join(', ') : 'None';
-            md += `| ${i.mark} | ${i.product.model} ${i.sizeCode} | ${i.width} x ${i.height} mm | ${i.glazing} | ${i.uValue} / ${i.shgc} | ${i.rw} dB | ${accs} | ${i.qty} | $${i.price.toLocaleString()} (inc. gst) | ${i.notes} |\n`;
+    // Copy Schedule to clipboard in Markdown table format
+    const copyMarkdown = () => {
+        if (schedule.length === 0) return;
+
+        let md = `| Mark | Model | Size Code | Dimensions (WxH) | Daylight Area | Glazing Spec | R-Value | SHGC | Rw | BAL | Accessories | Qty | Notes |`;
+        if (showPricing) md += ` Unit Price | Total Price |`;
+        md += `\n| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |`;
+        if (showPricing) md += ` --- | --- |`;
+        md += `\n`;
+
+        schedule.forEach(item => {
+            const dlArea = item.product.daylightArea?.[item.sizeCode] || 0;
+            const accs = item.accessories.length > 0 ? item.accessories.join(", ") : "None";
+            let row = `| **${item.mark}** | ${item.product.model} | ${item.sizeCode} | ${item.width} x ${item.height} mm | ${dlArea} m² | ${item.glazing} | ${item.uValue} | ${item.shgc} | ${item.rw} dB | ${item.balRating} | ${accs} | ${item.qty} | ${item.notes} |`;
+            if (showPricing) row += ` $${item.price.toFixed(2)} | $${(item.price * item.qty).toFixed(2)} |`;
+            md += row + "\n";
         });
-        navigator.clipboard.writeText(md);
-        setCopiedMD(true);
-        setTimeout(() => setCopiedMD(false), 2000);
+
+        navigator.clipboard.writeText(md).then(() => {
+            triggerToast("Copied Markdown Schedule to clipboard!");
+        });
     };
 
-    const exportPDF = async () => {
-        const element = document.getElementById('architect-schedule-print-area');
-        if (!element) return;
-
-        try {
-            const canvas = await html2canvas(element, { scale: 2, useCORS: true });
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF('l', 'mm', 'a4');
-            const imgWidth = 280;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            pdf.addImage(imgData, 'PNG', 8, 10, imgWidth, imgHeight);
-            pdf.save(`VELUX_NZ_Specification_Schedule_${new Date().toISOString().slice(0,10)}.pdf`);
-        } catch (e) {
-            console.error("PDF generation failed:", e);
-        }
+    // Print styled document
+    const handlePrint = () => {
+        window.print();
     };
 
     return (
-        <div className="min-h-screen bg-neutral-50/50 pb-16 font-sans">
-            {/* Top Navigation Header */}
-            <header className="border-b bg-card sticky top-0 z-40 shadow-sm backdrop-blur-md bg-card/90">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-                    <div className="flex items-center gap-6">
+        <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+            {/* Header Area */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b pb-6 mb-8 gap-4">
+                <div>
+                    <div className="flex items-center gap-3">
                         <a href="https://www.velux.co.nz" target="_blank" rel="noopener noreferrer" className="hover:opacity-90 transition-opacity">
-                            <img src="/velux logo.svg" alt="VELUX New Zealand" className="h-10 w-auto" />
+                            <img src="/velux logo.svg" alt="VELUX New Zealand" className="h-10 object-contain" />
                         </a>
-                        {partnerInfo && (
-                            <div className="flex items-center gap-3 border-l pl-6 border-neutral-200">
-                                <a href={partnerInfo.link} target="_blank" rel="noopener noreferrer" className="hover:opacity-90 transition-opacity">
-                                    <img src={partnerInfo.logo} alt={partnerInfo.name} className="h-9 w-auto object-contain" />
-                                </a>
-                            </div>
-                        )}
-                        <div className="border-l pl-6 border-neutral-200 hidden md:block">
-                            <h1 className="font-bold text-base text-foreground tracking-tight flex items-center gap-2">
-                                Skylight & Roof Window Specification Builder (NZ)
-                                <span className="bg-neutral-100 text-neutral-600 text-xs px-2 py-0.5 rounded font-medium border border-neutral-200">Architect Edition</span>
-                            </h1>
-                            <p className="text-xs text-muted-foreground">Architectural schedule, performance parameters & compliance generator</p>
-                        </div>
+                        <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Skylight SpecTool (NZ)</h1>
+                    </div>
+                    <p className="text-muted-foreground mt-2 text-sm">
+                        Technical specification & schedule builder for architects, engineers, and specifiers in New Zealand.
+                    </p>
+                </div>
+                
+                <div className="flex flex-col gap-2 items-end self-start md:self-auto">
+                    <div className="flex items-center gap-3">
+                        <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setShowPricing(!showPricing)}
+                            className="flex items-center gap-2 text-xs"
+                        >
+                            {showPricing ? <EyeOff size={14} /> : <Eye size={14} />}
+                            {showPricing ? "Hide Pricing" : "Show Indicative RRP"}
+                        </Button>
+                        <a 
+                            href="https://resources.velux.co.nz/architectural-drawings" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center rounded-md text-xs font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3"
+                        >
+                            <Download size={14} className="mr-2" />
+                            CAD/BIM Portal
+                        </a>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <a 
+                            href="/CodeMark Skylights.pdf" 
+                            download="CodeMark Skylights.pdf"
+                            className="inline-flex items-center justify-center rounded-md text-xs font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3"
+                        >
+                            <Download size={14} className="mr-2" />
+                            Skylight CodeMark
+                        </a>
+                        <a 
+                            href="/CodeMark Roof Windows.pdf" 
+                            download="CodeMark Roof Windows.pdf"
+                            className="inline-flex items-center justify-center rounded-md text-xs font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3"
+                        >
+                            <Download size={14} className="mr-2" />
+                            Roof Window CodeMark
+                        </a>
                     </div>
                 </div>
-            </header>
+            </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+            {/* Toast Notification */}
+            <AnimatePresence>
+                {toastMessage && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-neutral-900 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 text-sm font-medium"
+                    >
+                        <Info size={16} className="text-primary" />
+                        {toastMessage}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* View Switcher Tabs */}
+            <div className="flex border-b mb-8 border-border">
+                <button
+                    onClick={() => setActiveTab('configure')}
+                    className={`pb-4 px-6 font-bold text-sm tracking-wide border-b-2 transition-all flex items-center gap-2 ${
+                        activeTab === 'configure' 
+                            ? 'border-primary text-primary' 
+                            : 'border-transparent text-muted-foreground hover:text-foreground'
+                    }`}
+                >
+                    <Sliders size={16} />
+                    1. CONFIGURE SPECIFICATION
+                </button>
+                <button
+                    onClick={() => setActiveTab('schedule')}
+                    className={`pb-4 px-6 font-bold text-sm tracking-wide border-b-2 transition-all flex items-center gap-2 ${
+                        activeTab === 'schedule' 
+                            ? 'border-primary text-primary' 
+                            : 'border-transparent text-muted-foreground hover:text-foreground'
+                    }`}
+                >
+                    <FileSpreadsheet size={16} />
+                    2. PROJECT SCHEDULE ({schedule.length})
+                </button>
+            </div>
+
+            {/* TAB CONTENT: 1. CONFIGURE */}
+            {activeTab === 'configure' && (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    {/* Main Workflow Form Controls */}
-                    <div className="lg:col-span-7 space-y-6">
-
-                        {/* Step 1: Category */}
+                    {/* Left Panel: Configuration Options (8 cols) */}
+                    <div className="lg:col-span-8 space-y-6">
+                        {/* Step 1: Product Category */}
                         <Card className="border border-border shadow-sm">
                             <CardHeader className="pb-4">
                                 <CardTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
                                     <span className="w-6 h-6 rounded-full bg-neutral-100 flex items-center justify-center text-xs text-neutral-500 font-bold border">1</span>
-                                    System Category Selection
+                                    Product Category
                                 </CardTitle>
                                 <CardDescription>Select the architectural system category</CardDescription>
                             </CardHeader>
                             <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {[
-                                    { id: 'skylight', title: 'Skylight Systems', desc: 'Double/Triple-glazed Pitched & Flat Solutions (Includes Roof Windows)', icon: <img src="/skylight-icon.png" alt="Skylight" className="w-10 h-10 object-contain" /> },
+                                    { id: 'skylight', title: 'Skylight Systems', desc: 'Double-glazed Pitched / Flat Solutions (Includes Roof Windows)', icon: <img src="/skylight-icon.png" alt="Skylight" className="w-10 h-10 object-contain" /> },
                                     { id: 'sun-tunnel', title: 'Sun Tunnels', desc: 'Light transmission tubing structures.', icon: <img src="/sun-tunnel-icon.png" alt="Sun Tunnel" className="w-10 h-10 object-contain" /> },
                                 ].map((cat) => {
                                     const isSelected = selection.productCategory === cat.id;
                                     return (
                                         <button
                                             key={cat.id}
-                                            onClick={() => setSelection({
-                                                productCategory: cat.id as any,
-                                                roofPitch: null,
-                                                openingType: null,
-                                                sizeCode: null,
-                                                selectedProduct: null,
-                                                selectedBlind: null,
-                                                selectedInsectScreen: false,
-                                                selectedAccessories: []
-                                            })}
-                                            className={`p-5 rounded-xl border text-left flex flex-col justify-between transition-all min-h-[140px] hover:shadow-md ${
+                                            onClick={() => {
+                                                setSelection({
+                                                    ...selection,
+                                                    productCategory: cat.id as any,
+                                                    roofPitch: null,
+                                                    openingType: null,
+                                                    sizeCode: null,
+                                                    selectedProduct: null
+                                                });
+                                            }}
+                                            className={`p-5 rounded-xl border text-center flex flex-col items-center justify-start transition-all min-h-[170px] hover:shadow-sm ${
                                                 isSelected 
-                                                    ? 'border-primary bg-primary/5 ring-2 ring-primary/20 shadow-sm' 
+                                                    ? 'border-primary bg-primary/5 ring-2 ring-primary/20' 
                                                     : 'border-border bg-card hover:border-neutral-400'
                                             }`}
                                         >
-                                            <div className="flex justify-between items-start">
-                                                <div className="p-2 rounded-lg bg-neutral-50 border border-neutral-100">{cat.icon}</div>
-                                                {isSelected && <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-white"><Check className="w-3 h-3 stroke-[3]" /></div>}
+                                            <div className={`p-2 rounded-lg h-10 flex items-center justify-center ${isSelected ? 'text-primary' : 'text-neutral-400'}`}>
+                                                {cat.icon}
                                             </div>
-                                            <div>
-                                                <h3 className="font-bold text-base text-foreground">{cat.title}</h3>
+                                            <div className="mt-4">
+                                                <h3 className="font-bold text-sm text-foreground">{cat.title}</h3>
                                                 <p className="text-xs text-muted-foreground mt-1 leading-normal">{cat.desc}</p>
                                             </div>
                                         </button>
@@ -409,25 +519,25 @@ export default function ArchitectSelector() {
                             </CardContent>
                         </Card>
 
-                        {/* Step 2: Roof Pitch */}
+                        {/* Step 2: Roof Pitch Constraints */}
                         {selection.productCategory && (
                             <Card className="border border-border shadow-sm">
                                 <CardHeader className="pb-4">
                                     <CardTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
                                         <span className="w-6 h-6 rounded-full bg-neutral-100 flex items-center justify-center text-xs text-neutral-500 font-bold border">2</span>
-                                        Roof Substrate Pitch
+                                        Roof Pitch & Placement
                                     </CardTitle>
-                                    <CardDescription>Specify the installation roof slope angle range</CardDescription>
+                                    <CardDescription>Define the roof structure slope angle</CardDescription>
                                 </CardHeader>
                                 <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     {[
                                         { 
                                             id: 'pitched', 
                                             title: 'Pitched Roof Slope', 
-                                            desc: '15° - 90° slope angle. Flashing integration standard.',
+                                            desc: '15° - 90° pitch installation. Inboard drainage flashing required.',
                                             icon: (
                                                 <svg width="32" height="24" viewBox="0 0 32 24" fill="none" className={selection.roofPitch === 'pitched' ? 'stroke-primary' : 'stroke-neutral-400'}>
-                                                    <path d="M4 20L16 6L28 20" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                    <path d="M4 20L18 6L30 20" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                                                 </svg>
                                             )
                                         },
@@ -466,10 +576,7 @@ export default function ArchitectSelector() {
                                                         : 'border-border bg-card hover:border-neutral-400'
                                                 }`}
                                             >
-                                                <div className="flex justify-between items-start">
-                                                    <div className="p-2 rounded-lg bg-neutral-50 border border-neutral-100">{pitch.icon}</div>
-                                                    {isSelected && <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-white"><Check className="w-3 h-3 stroke-[3]" /></div>}
-                                                </div>
+                                                <div>{pitch.icon}</div>
                                                 <div className="mt-4">
                                                     <h3 className="font-bold text-sm text-foreground flex items-center justify-between">
                                                         {pitch.title}
@@ -483,22 +590,22 @@ export default function ArchitectSelector() {
                             </Card>
                         )}
 
-                        {/* Step 3: Opening Mechanism */}
-                        {selection.roofPitch && selection.productCategory !== 'sun-tunnel' && (
+                        {/* Step 3: Ventilation / Operation Mode */}
+                        {selection.roofPitch && (
                             <Card className="border border-border shadow-sm">
                                 <CardHeader className="pb-4">
                                     <CardTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
                                         <span className="w-6 h-6 rounded-full bg-neutral-100 flex items-center justify-center text-xs text-neutral-500 font-bold border">3</span>
-                                        Ventilation & Opening Operation
+                                        Ventilation / Operation Preference
                                     </CardTitle>
-                                    <CardDescription>Select natural ventilation operational mode</CardDescription>
+                                    <CardDescription>Determine mechanical venting or fixed daylighting</CardDescription>
                                 </CardHeader>
                                 <CardContent className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                     {[
-                                        { id: 'fixed', label: 'Fixed Non-Opening', sub: 'Inoperable daylighting' },
-                                        { id: 'manual', label: 'Manual Vent', sub: 'Winder / Dual-Action (Max 4m height)' },
-                                        { id: 'electric', label: 'Mains Powered', sub: '230V electric motor' },
-                                        { id: 'solar', label: 'Solar Powered', sub: 'Wireless PV cell & battery' },
+                                        { id: 'fixed', title: 'Fixed', desc: 'Non-opening' },
+                                        { id: 'manual', title: 'Manual', desc: <>Winder handle<br />(Max 4m height from floor)</> },
+                                        { id: 'electric', title: 'Electric', desc: '240V mains integration' },
+                                        { id: 'solar', title: 'Solar-Powered', desc: 'Battery backup + remote' }
                                     ].map((op) => {
                                         const isAvailable = availableOpeningTypes.includes(op.id);
                                         const isSelected = selection.openingType === op.id;
@@ -519,21 +626,15 @@ export default function ArchitectSelector() {
                                                     });
                                                 }}
                                                 className={`p-4 rounded-xl border text-left flex flex-col justify-between transition-all min-h-[100px] ${
-                                                    !isAvailable ? 'opacity-30 cursor-not-allowed bg-neutral-50' : ''
+                                                    !isAvailable ? 'opacity-30 cursor-not-allowed bg-neutral-50 border-neutral-100' : ''
                                                 } ${
                                                     isSelected 
-                                                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20 font-semibold' 
+                                                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20' 
                                                         : 'border-border bg-card hover:border-neutral-400'
                                                 }`}
                                             >
-                                                <div className="flex justify-between items-start w-full">
-                                                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{op.id}</span>
-                                                    {isSelected && <Check className="w-4 h-4 text-primary" />}
-                                                </div>
-                                                <div>
-                                                    <h4 className="font-bold text-xs text-foreground mt-2">{op.label}</h4>
-                                                    <p className="text-[10px] text-muted-foreground mt-0.5">{op.sub}</p>
-                                                </div>
+                                                <div className="font-bold text-xs tracking-wider uppercase">{op.title}</div>
+                                                <div className="text-[10px] text-muted-foreground leading-normal mt-1">{op.desc}</div>
                                             </button>
                                         );
                                     })}
@@ -542,7 +643,7 @@ export default function ArchitectSelector() {
                         )}
 
                         {/* Step 4: System Size Codes */}
-                        {(selection.openingType || selection.productCategory === 'sun-tunnel') && (selection.selectedProduct || selection.productCategory === 'sun-tunnel' || (selection.roofPitch === 'pitched' && selection.openingType === 'manual')) && (
+                        {selection.openingType && (selection.selectedProduct || selection.productCategory === 'sun-tunnel' || (selection.roofPitch === 'pitched' && selection.openingType === 'manual')) && (
                             <Card className="border border-border shadow-sm">
                                 <CardHeader className="pb-4">
                                     <CardTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
@@ -799,7 +900,7 @@ export default function ArchitectSelector() {
                                     {(selection.selectedProduct?.id.startsWith('ggu') || (selection.productCategory as string) === 'roof-window') && (
                                         <div className="flex items-center justify-between border-t pt-4 border-dashed border-border">
                                             <div>
-                                                <h4 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">INSECT SCREEN (ZIL)</h4>
+                                                <h4 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Insect Screen (ZIL)</h4>
                                                 <p className="text-[10px] text-muted-foreground mt-1">Anodized aluminum framing with fibreglass mesh.</p>
                                             </div>
                                             <button
@@ -823,28 +924,30 @@ export default function ArchitectSelector() {
                                                 {ACCESSORIES.filter(a => a.compatibleModels.includes(selection.selectedProduct!.model) && (a.prices as unknown as Record<string, number>)[selection.sizeCode!] !== undefined).map(acc => {
                                                     const isChecked = selection.selectedAccessories.includes(acc.id);
                                                     return (
-                                                        <label key={acc.id} className={`p-3.5 rounded-lg border flex items-center justify-between cursor-pointer transition-all ${
-                                                            isChecked ? 'border-primary bg-primary/5' : 'border-border hover:border-neutral-300'
-                                                        }`}>
+                                                        <button
+                                                            key={acc.id}
+                                                            onClick={() => {
+                                                                const updated = isChecked
+                                                                    ? selection.selectedAccessories.filter(id => id !== acc.id)
+                                                                    : [...selection.selectedAccessories, acc.id];
+                                                                setSelection({ ...selection, selectedAccessories: updated });
+                                                            }}
+                                                            className={`p-3 rounded-lg border text-left transition-all flex items-center justify-between ${
+                                                                isChecked 
+                                                                    ? 'border-primary bg-primary/5' 
+                                                                    : 'border-border bg-card hover:border-neutral-400'
+                                                            }`}
+                                                        >
                                                             <div>
-                                                                <span className="text-xs font-bold text-foreground block">{acc.name}</span>
-                                                                {acc.id === 'zzz199' && (
-                                                                    <span className="text-[10px] text-muted-foreground block mt-0.5">Mandatory structural accessory.</span>
-                                                                )}
+                                                                <h4 className="font-bold text-xs">{acc.name}</h4>
+                                                                <p className="text-[9px] text-muted-foreground mt-0.5">Mandatory structural accessory.</p>
                                                             </div>
-                                                            <input 
-                                                                type="checkbox"
-                                                                checked={isChecked}
-                                                                onChange={(e) => {
-                                                                    if (e.target.checked) {
-                                                                        setSelection({ ...selection, selectedAccessories: [...selection.selectedAccessories, acc.id] });
-                                                                    } else {
-                                                                        setSelection({ ...selection, selectedAccessories: selection.selectedAccessories.filter(id => id !== acc.id) });
-                                                                    }
-                                                                }}
-                                                                className="rounded border-neutral-300 text-primary focus:ring-primary h-4 w-4"
-                                                            />
-                                                        </label>
+                                                            <div className={`w-4 h-4 rounded border flex items-center justify-center text-[10px] ${
+                                                                isChecked ? 'bg-primary border-primary text-primary-foreground' : 'border-neutral-300 bg-white'
+                                                            }`}>
+                                                                {isChecked && <Check size={10} strokeWidth={4} />}
+                                                            </div>
+                                                        </button>
                                                     );
                                                 })}
                                             </div>
@@ -853,196 +956,325 @@ export default function ArchitectSelector() {
                                 </CardContent>
                             </Card>
                         )}
-
-                        {/* Add to Schedule Action Button */}
-                        {selection.selectedProduct && selection.sizeCode && (
-                            <Button 
-                                onClick={handleAddToSchedule}
-                                className="w-full py-6 text-base font-bold shadow-lg flex items-center justify-center gap-2"
-                                size="lg"
-                            >
-                                <Plus className="w-5 h-5" /> Add Configured Unit to Schedule
-                            </Button>
-                        )}
                     </div>
 
-                    {/* Right Hand Live Preview & Specification Card */}
-                    <div className="lg:col-span-5 space-y-6">
+                    {/* Right Panel: Technical Specifications Summary (4 cols) */}
+                    <div className="lg:col-span-4 space-y-6">
                         {selection.selectedProduct && selection.sizeCode && selectedSizeDetails ? (
-                            <div className="sticky top-28 space-y-6">
-                                <Card className="border border-border shadow-md bg-card overflow-hidden">
-                                    <div className="bg-neutral-900 text-white p-6">
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <span className="text-[10px] font-bold uppercase tracking-widest bg-white/10 text-white/80 px-2 py-0.5 rounded">Specification Summary</span>
-                                                <h2 className="text-2xl font-black mt-2 tracking-tight">{selection.selectedProduct.model} {selection.sizeCode}</h2>
-                                                <p className="text-xs text-neutral-300 mt-1">{selection.selectedProduct.name}</p>
-                                            </div>
-                                            <ShieldCheck className="w-8 h-8 text-primary" />
+                            <div className="sticky top-6 space-y-6">
+                                <Card className="border border-primary/20 shadow-md bg-white">
+                                    <div className="bg-neutral-900 text-white p-5 rounded-t-lg">
+                                        <div className="text-[10px] bg-primary text-primary-foreground font-black tracking-widest px-2 py-0.5 rounded inline-block uppercase">Specification Sheet</div>
+                                        <h3 className="text-xl font-bold mt-2 tracking-tight">{selection.selectedProduct.name}</h3>
+                                        <div className="flex justify-between items-center mt-3 text-xs text-neutral-300">
+                                            <span>Model: <strong className="text-white">{selection.selectedProduct.model}</strong></span>
+                                            <span>Size: <strong className="text-white">{selection.sizeCode}</strong></span>
                                         </div>
                                     </div>
+                                    <CardContent className="p-5 space-y-5">
+                                        {/* Technical CAD SVG Schematic */}
+                                        <div className="bg-neutral-50 rounded-lg p-4 border flex items-center justify-center relative overflow-hidden h-[180px]">
+                                            <div className="absolute top-2 left-2 text-[8px] bg-neutral-200 text-neutral-500 px-1 rounded uppercase tracking-wider font-bold">Profile Section</div>
+                                            <svg width="220" height="130" viewBox="0 0 220 130" className="w-full h-full max-w-[220px]">
+                                                {/* Left structural support */}
+                                                <rect x="10" y="30" width="30" height="80" rx="3" fill="#E5E5E5" stroke="#A3A3A3" strokeWidth="1.5" />
+                                                {/* Right structural support */}
+                                                <rect x="180" y="30" width="30" height="80" rx="3" fill="#E5E5E5" stroke="#A3A3A3" strokeWidth="1.5" />
+                                                
+                                                {/* Double glazing panes */}
+                                                {/* Inner Glass */}
+                                                <line x1="40" y1="55" x2="180" y2="55" stroke="#38BDF8" strokeWidth="3" />
+                                                {/* Argon gas gap */}
+                                                <line x1="40" y1="61" x2="180" y2="61" stroke="#E0F2FE" strokeWidth="4" strokeDasharray="2 3" />
+                                                {/* Outer Glass */}
+                                                <line x1="40" y1="67" x2="180" y2="67" stroke="#0284C7" strokeWidth="3" />
 
-                                    <CardContent className="p-6 space-y-6">
+                                                {/* Sealing rubbers / gasket */}
+                                                <rect x="38" y="50" width="4" height="22" rx="1" fill="#171717" />
+                                                <rect x="178" y="50" width="4" height="22" rx="1" fill="#171717" />
+                                                
+                                                {/* Frame / Gaskets */}
+                                                <path d="M4 110 H216" stroke="#404040" strokeWidth="2.5" />
+                                                
+                                                {/* Labels */}
+                                                <text x="110" y="45" textAnchor="middle" fontSize="8" fill="#737373" fontFamily="sans-serif">Double-Glazed Gas Cavity</text>
+                                                <text x="110" y="85" textAnchor="middle" fontSize="9" fill="#DA251D" fontWeight="bold" fontFamily="sans-serif">
+                                                    {selectedSizeDetails.width} × {selectedSizeDetails.height} mm
+                                                </text>
+                                            </svg>
+                                        </div>
+
                                         {/* Physical Specifications */}
-                                        <div className="space-y-3">
-                                            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Dimensions & Daylight</h3>
-                                            <div className="grid grid-cols-2 gap-3">
-                                                <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-100">
-                                                    <span className="text-[11px] text-muted-foreground block">Overall Dimensions</span>
-                                                    <span className="text-sm font-bold text-foreground mt-0.5 block">{selectedSizeDetails.width} × {selectedSizeDetails.height} mm</span>
-                                                </div>
-                                                <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-100">
-                                                    <span className="text-[11px] text-muted-foreground block">Net Daylight Area</span>
-                                                    <span className="text-sm font-bold text-foreground mt-0.5 block">
-                                                        {(selection.selectedProduct.daylightArea?.[selection.sizeCode] || 0).toFixed(2)} m²
-                                                    </span>
-                                                </div>
+                                        <div className="space-y-2 text-xs">
+                                            <div className="text-neutral-500 font-bold uppercase tracking-wider text-[10px] pb-1 border-b">Performance Matrix</div>
+                                            
+                                            <div className="flex justify-between py-1 border-b border-neutral-100">
+                                                <span className="text-neutral-500 flex items-center gap-1">R-Value (Total System) <span title="Thermal Heat Transfer Coefficient (lower is better)"><Info size={10} className="text-neutral-400" /></span></span>
+                                                <span className="font-bold text-foreground">{selection.selectedProduct.uValue} W/m²K</span>
+                                            </div>
+                                            
+                                            <div className="flex justify-between py-1 border-b border-neutral-100">
+                                                <span className="text-neutral-500 flex items-center gap-1">Solar Heat Gain (SHGC) <span title="Fraction of solar radiation admitted (lower limits solar gain)"><Info size={10} className="text-neutral-400" /></span></span>
+                                                <span className="font-bold text-foreground">{selection.selectedProduct.shgc}</span>
+                                            </div>
+
+                                            <div className="flex justify-between py-1 border-b border-neutral-100">
+                                                <span className="text-neutral-500 flex items-center gap-1">Acoustic Reduction (Rw) <span title="Weighted sound reduction index (higher means more noise blocking)"><Info size={10} className="text-neutral-400" /></span></span>
+                                                <span className="font-bold text-foreground">{selection.selectedProduct.rw} dB</span>
+                                            </div>
+
+                                            <div className="flex justify-between py-1 border-b border-neutral-100">
+                                                <span className="text-neutral-500">Visible Light (VLT)</span>
+                                                <span className="font-bold text-foreground">{((selection.selectedProduct.vlt || 0.52) * 100).toFixed(0)}%</span>
+                                            </div>
+
+                                            <div className="flex justify-between py-1 border-b border-neutral-100">
+                                                <span className="text-neutral-500">Daylight Area</span>
+                                                <span className="font-bold text-foreground">
+                                                    {(selection.selectedProduct.daylightArea?.[selection.sizeCode!] || 0).toFixed(2)} m²
+                                                </span>
+                                            </div>
+
+                                            <div className="flex justify-between py-1 border-b border-neutral-100">
+                                                <span className="text-neutral-500">Bushfire Suitability</span>
+                                                <span className="font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded text-[10px]">
+                                                    {selection.selectedProduct.balRating} Ready
+                                                </span>
+                                            </div>
+
+                                            <div className="flex justify-between py-1">
+                                                <span className="text-neutral-500">Hail Resistance</span>
+                                                <span className="font-bold text-foreground">{selection.selectedProduct.hailResistance}</span>
                                             </div>
                                         </div>
 
-                                        {/* Performance Matrix */}
-                                        <div className="space-y-3">
-                                            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Thermal & Acoustic Performance</h3>
-                                            <div className="grid grid-cols-3 gap-2 text-center">
-                                                <div className="p-2.5 bg-neutral-50 rounded-lg border border-neutral-100">
-                                                    <span className="text-[10px] text-muted-foreground block uppercase font-medium">R-Value</span>
-                                                    <span className="text-sm font-bold text-foreground mt-0.5 block">{selection.selectedProduct.uValue || 2.6}</span>
-                                                </div>
-                                                <div className="p-2.5 bg-neutral-50 rounded-lg border border-neutral-100">
-                                                    <span className="text-[10px] text-muted-foreground block uppercase font-medium">SHGC</span>
-                                                    <span className="text-sm font-bold text-foreground mt-0.5 block">{selection.selectedProduct.shgc || 0.24}</span>
-                                                </div>
-                                                <div className="p-2.5 bg-neutral-50 rounded-lg border border-neutral-100">
-                                                    <span className="text-[10px] text-muted-foreground block uppercase font-medium">Rw Acoustic</span>
-                                                    <span className="text-sm font-bold text-foreground mt-0.5 block">{selection.selectedProduct.rw || 32} dB</span>
-                                                </div>
+                                        {/* Cost information if visible */}
+                                        {showPricing && (
+                                            <div className="bg-primary/5 p-3 rounded-lg border border-primary/10 text-xs flex justify-between items-center">
+                                                <span className="font-bold text-primary">Indicative Supply RRP (inc. gst):</span>
+                                                <span className="font-extrabold text-sm text-primary">${calculatedPrice.toLocaleString()} NZD</span>
                                             </div>
-                                        </div>
+                                        )}
 
-                                        {/* Configuration Cost Breakdown */}
-                                        <div className="border-t pt-4 border-dashed border-border space-y-2">
-                                            <div className="flex justify-between items-center text-sm">
-                                                <span className="text-muted-foreground">Indicative Supply RRP {showIncGst ? '(inc. gst)' : ''}</span>
-                                                <span className="font-bold text-lg text-foreground">${calculatedPrice.toLocaleString()} NZD</span>
-                                            </div>
-                                            <p className="text-[11px] text-muted-foreground leading-normal">
-                                                Includes base skylight unit, standard flashing kit, and configured factory add-ons.
-                                            </p>
+                                        {/* Actions */}
+                                        <div className="flex flex-col gap-2 pt-2">
+                                            <Button 
+                                                onClick={handleAddToSchedule}
+                                                className="w-full flex items-center justify-center gap-2 bg-neutral-900 hover:bg-neutral-800 text-white font-bold h-10"
+                                            >
+                                                <Plus size={16} />
+                                                Add to Project Schedule
+                                            </Button>
+                                            
+                                            <Button 
+                                                variant="outline"
+                                                onClick={handleReset}
+                                                className="w-full text-xs font-semibold h-10 border border-neutral-200"
+                                            >
+                                                Clear Configuration
+                                            </Button>
                                         </div>
                                     </CardContent>
                                 </Card>
+
+                                {/* Compliance Badge Footer */}
+                                <div className="border border-border rounded-lg p-4 bg-stone-50 space-y-2">
+                                    <div className="text-[10px] text-neutral-500 font-bold uppercase tracking-widest flex items-center gap-1.5">
+                                        <Building2 size={12} />
+                                        Code Compliance
+                                    </div>
+                                    <p className="text-[10px] text-muted-foreground leading-normal">
+                                        VELUX systems specified above are engineered in compliance with New Zealand Building Code standards. Certified for NZ wind & thermal zones when installed with standard flashing kit.
+                                    </p>
+                                </div>
                             </div>
                         ) : (
-                            <div className="sticky top-28">
-                                <Card className="border border-dashed border-neutral-300 bg-neutral-50/50 p-8 text-center space-y-3">
-                                    <AlertCircle className="w-10 h-10 text-neutral-400 mx-auto" />
-                                    <h3 className="font-bold text-sm text-neutral-700">No Unit Selected</h3>
-                                    <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-                                        Complete the configuration steps on the left to view technical performance parameters and add units to your project schedule.
-                                    </p>
-                                </Card>
-                            </div>
+                            <Card className="border border-neutral-200 border-dashed shadow-none text-center p-8 bg-neutral-50 min-h-[300px] flex flex-col justify-center items-center">
+                                <Sliders size={40} className="text-neutral-300 mb-4" strokeWidth={1.5} />
+                                <h3 className="font-bold text-sm text-foreground">Select Parameters</h3>
+                                <p className="text-xs text-muted-foreground mt-2 max-w-[200px] leading-relaxed">
+                                    Follow the steps in the configuration wizard to generate technical specifications.
+                                </p>
+                            </Card>
                         )}
                     </div>
                 </div>
+            )}
 
-                {/* Bottom Consolidated Project Schedule Table */}
-                {schedule.length > 0 && (
-                    <div className="mt-12 space-y-6" id="architect-schedule-print-area">
-                        <Card className="border border-border shadow-md">
-                            <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b pb-4">
-                                <div>
-                                    <CardTitle className="text-xl font-bold flex items-center gap-2">
-                                        <FileText className="w-5 h-5 text-primary" />
-                                        Project Skylight Schedule (NZ)
-                                    </CardTitle>
-                                    <CardDescription>Consolidated specification table for construction documentation</CardDescription>
-                                </div>
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <Button variant="outline" size="sm" onClick={copyMarkdownTable} className="text-xs gap-1.5">
-                                        <Copy className="w-3.5 h-3.5" />
-                                        {copiedMD ? 'Copied!' : 'Copy MD Table'}
-                                    </Button>
-                                    <Button variant="outline" size="sm" onClick={exportCSV} className="text-xs gap-1.5">
-                                        <Download className="w-3.5 h-3.5" />
-                                        Export CSV
-                                    </Button>
-                                    <Button variant="outline" size="sm" onClick={exportPDF} className="text-xs gap-1.5">
-                                        <Printer className="w-3.5 h-3.5" />
-                                        Print Spec PDF
-                                    </Button>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="p-0 overflow-x-auto">
-                                <table className="w-full text-left text-xs">
-                                    <thead className="bg-neutral-50 border-b font-bold text-neutral-600 uppercase tracking-wider">
-                                        <tr>
-                                            <th className="p-4">Mark</th>
-                                            <th className="p-4">Model Code</th>
+            {/* TAB CONTENT: 2. PROJECT SCHEDULE */}
+            {activeTab === 'schedule' && (
+                <Card className="border border-border shadow-sm">
+                    <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b pb-6 gap-4">
+                        <div>
+                            <CardTitle className="text-xl font-bold flex items-center gap-2">
+                                <FileSpreadsheet className="text-neutral-500" />
+                                Project Skylight Schedule (NZ)
+                            </CardTitle>
+                            <CardDescription>Consolidated specification table for construction documentation</CardDescription>
+                        </div>
+                        
+                        {schedule.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    onClick={copyMarkdown}
+                                    className="flex items-center gap-1.5 text-xs h-9 border-neutral-200"
+                                >
+                                    <Copy size={13} />
+                                    Copy MD Table
+                                </Button>
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    onClick={exportCSV}
+                                    className="flex items-center gap-1.5 text-xs h-9 border-neutral-200"
+                                >
+                                    <FileSpreadsheet size={13} />
+                                    Export CSV
+                                </Button>
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    onClick={handlePrint}
+                                    className="flex items-center gap-1.5 text-xs h-9 border-neutral-200"
+                                >
+                                    <Printer size={13} />
+                                    Print Spec PDF
+                                </Button>
+                            </div>
+                        )}
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        {schedule.length > 0 ? (
+                            <div className="overflow-x-auto print:overflow-visible">
+                                <table className="w-full text-left border-collapse text-xs print:table" id="schedule-table">
+                                    <thead>
+                                        <tr className="bg-neutral-50 border-b border-border font-bold text-neutral-500 uppercase tracking-wider">
+                                            <th className="p-4 w-20">Mark</th>
+                                            <th className="p-4 w-28">Model Code</th>
+                                            <th className="p-4">Type</th>
                                             <th className="p-4">Size (WxH)</th>
                                             <th className="p-4">Light Area</th>
-                                            <th className="p-4">Glazing Specification</th>
-                                            <th className="p-4">R / SHGC</th>
-                                            <th className="p-4">Rw (Acoustic)</th>
+                                            <th className="p-4 max-w-[150px]">Glazing Specification</th>
+                                            <th className="p-4 text-center">R / SHGC</th>
+                                            <th className="p-4 text-center">Rw (Acoustic)</th>
                                             <th className="p-4">Accessories</th>
-                                            <th className="p-4">Unit Price (NZD)</th>
-                                            <th className="p-4 text-center">Qty</th>
-                                            <th className="p-4">Notes</th>
-                                            <th className="p-4 text-center">Remove</th>
+                                            {showPricing && <th className="p-4 text-right">Unit Price (NZD)</th>}
+                                            <th className="p-4 w-20 text-center">Qty</th>
+                                            <th className="p-4 max-w-[200px]">Notes</th>
+                                            <th className="p-4 w-12 text-center print:hidden">Remove</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-neutral-100">
+                                    <tbody className="divide-y divide-border">
                                         {schedule.map((item) => (
-                                            <tr key={item.id} className="hover:bg-neutral-50/80 transition-colors">
-                                                <td className="p-4 font-black text-foreground">{item.mark}</td>
-                                                <td className="p-4 font-bold">
-                                                    <div>{item.product.model}</div>
-                                                    <div className="text-[10px] text-muted-foreground font-normal">{item.sizeCode}</div>
-                                                </td>
-                                                <td className="p-4">{item.width} × {item.height} mm</td>
-                                                <td className="p-4">{((item.product.daylightArea?.[item.sizeCode] || 0)).toFixed(2)} m²</td>
-                                                <td className="p-4 max-w-[180px] text-muted-foreground">{item.glazing}</td>
-                                                <td className="p-4 font-medium">{item.uValue} / {item.shgc}</td>
-                                                <td className="p-4 font-medium">{item.rw} dB</td>
-                                                <td className="p-4 max-w-[160px]">
-                                                    {item.accessories.length > 0 ? (
-                                                        <ul className="list-disc list-inside space-y-0.5 text-[11px] text-neutral-600">
-                                                            {item.accessories.map((acc, i) => <li key={i}>{acc}</li>)}
-                                                        </ul>
-                                                    ) : (
-                                                        <span className="text-neutral-400">None</span>
-                                                    )}
-                                                </td>
-                                                <td className="p-4 font-bold text-foreground">${item.price.toLocaleString()}</td>
-                                                <td className="p-4">
-                                                    <div className="flex items-center justify-center gap-1.5">
-                                                        <button onClick={() => updateQty(item.id, -1)} className="w-5 h-5 rounded border flex items-center justify-center text-neutral-600 hover:bg-neutral-100 font-bold">-</button>
-                                                        <span className="font-bold w-4 text-center">{item.qty}</span>
-                                                        <button onClick={() => updateQty(item.id, 1)} className="w-5 h-5 rounded border flex items-center justify-center text-neutral-600 hover:bg-neutral-100 font-bold">+</button>
-                                                    </div>
-                                                </td>
-                                                <td className="p-4 max-w-[180px]">
+                                            <tr key={item.id} className="hover:bg-neutral-50 transition-colors bg-white print:break-inside-avoid">
+                                                {/* Mark (Editable inline) */}
+                                                <td className="p-4 font-bold text-foreground">
                                                     <input 
                                                         type="text" 
-                                                        value={item.notes} 
-                                                        onChange={(e) => updateNotes(item.id, e.target.value)}
-                                                        className="w-full bg-transparent border-b border-dashed border-neutral-300 focus:border-primary text-xs focus:outline-none py-0.5"
+                                                        value={item.mark}
+                                                        onChange={(e) => handleUpdateMark(item.id, e.target.value)}
+                                                        className="w-16 bg-transparent border-b border-transparent hover:border-neutral-300 focus:border-primary focus:outline-none font-bold py-0.5 print:border-none print:p-0"
                                                     />
                                                 </td>
+                                                {/* Model */}
+                                                <td className="p-4">
+                                                    <span className="font-extrabold text-neutral-800">{item.product.model}</span> {item.sizeCode}
+                                                </td>
+                                                {/* Type */}
+                                                <td className="p-4 font-medium text-neutral-600">
+                                                    {item.product.name.split(' (')[0]}
+                                                </td>
+                                                {/* Dimensions */}
+                                                <td className="p-4 text-neutral-500 whitespace-nowrap">
+                                                    {item.width} × {item.height} mm
+                                                </td>
+                                                {/* Daylight Area */}
+                                                <td className="p-4 text-neutral-500">
+                                                    {(item.product.daylightArea?.[item.sizeCode] || 0).toFixed(2)} m²
+                                                </td>
+                                                {/* Glazing */}
+                                                <td className="p-4 text-[10px] text-neutral-500 max-w-[150px] leading-relaxed">
+                                                    {item.glazing}
+                                                </td>
+                                                {/* R / SHGC */}
+                                                <td className="p-4 text-center text-neutral-700 whitespace-nowrap">
+                                                    {item.uValue} / {item.shgc}
+                                                </td>
+                                                {/* Acoustic Rw */}
+                                                <td className="p-4 text-center text-neutral-700 font-medium">
+                                                    {item.rw} dB
+                                                </td>
+                                                {/* Accessories */}
+                                                <td className="p-4 text-[10px] text-neutral-500 max-w-[120px] leading-relaxed">
+                                                    {item.accessories.length > 0 ? (
+                                                        <ul className="list-disc pl-3 space-y-0.5">
+                                                            {item.accessories.map((a, idx) => <li key={idx}>{a}</li>)}
+                                                        </ul>
+                                                    ) : <span className="text-neutral-300">None</span>}
+                                                </td>
+                                                {/* Pricing if toggle shown */}
+                                                {showPricing && (
+                                                    <td className="p-4 text-right font-semibold text-neutral-700 whitespace-nowrap">
+                                                        ${item.price.toLocaleString()}
+                                                    </td>
+                                                )}
+                                                {/* Qty (Editable inline) */}
                                                 <td className="p-4 text-center">
-                                                    <button onClick={() => removeItem(item.id)} className="text-neutral-400 hover:text-red-500 transition-colors">
-                                                        <Trash2 className="w-4 h-4" />
+                                                    <div className="flex items-center justify-center gap-1.5 print:hidden">
+                                                        <button 
+                                                            onClick={() => handleUpdateQty(item.id, item.qty - 1)}
+                                                            className="w-5 h-5 rounded border bg-neutral-100 flex items-center justify-center font-bold hover:bg-neutral-200"
+                                                        >
+                                                            -
+                                                        </button>
+                                                        <span className="w-6 text-center font-bold">{item.qty}</span>
+                                                        <button 
+                                                            onClick={() => handleUpdateQty(item.id, item.qty + 1)}
+                                                            className="w-5 h-5 rounded border bg-neutral-100 flex items-center justify-center font-bold hover:bg-neutral-200"
+                                                        >
+                                                            +
+                                                        </button>
+                                                    </div>
+                                                    <span className="hidden print:inline font-bold">{item.qty}</span>
+                                                </td>
+                                                {/* Notes (Editable inline) */}
+                                                <td className="p-4 max-w-[200px]">
+                                                    <textarea
+                                                        value={item.notes}
+                                                        onChange={(e) => handleUpdateNotes(item.id, e.target.value)}
+                                                        className="w-full bg-transparent border-b border-transparent hover:border-neutral-300 focus:border-primary focus:outline-none py-0.5 text-[10px] leading-relaxed resize-y min-h-[40px] print:border-none print:p-0 print:resize-none"
+                                                        placeholder="Add project specifications notes..."
+                                                    />
+                                                </td>
+                                                {/* Remove button */}
+                                                <td className="p-4 text-center print:hidden">
+                                                    <button 
+                                                        onClick={() => handleRemoveFromSchedule(item.id)}
+                                                        className="text-neutral-400 hover:text-red-500 p-1 rounded hover:bg-neutral-100 transition-colors"
+                                                        title="Delete row"
+                                                    >
+                                                        <Trash2 size={15} />
                                                     </button>
                                                 </td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
-                            </CardContent>
-                        </Card>
-                    </div>
-                )}
-            </div>
+                            </div>
+                        ) : (
+                            <div className="text-center py-20 px-4">
+                                <FileSpreadsheet size={48} className="text-neutral-300 mx-auto mb-4" strokeWidth={1.5} />
+                                <h3 className="font-bold text-sm text-foreground">Schedule is empty</h3>
+                                <p className="text-xs text-muted-foreground mt-2 max-w-sm mx-auto leading-relaxed">
+                                    Navigate back to the configuration tab, spec your skylights, and click "Add to Project Schedule" to build your sheet.
+                                </p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
         </div>
     );
 }

@@ -407,16 +407,16 @@ export default function ArchitectSelector() {
                     </div>
                     <div className="flex items-center gap-3">
                         <a 
-                            href="/CodeMark Skylights.pdf" 
-                            download="CodeMark Skylights.pdf"
+                            href="/CodeMark Skylight NZ.pdf" 
+                            download="CodeMark Skylight NZ.pdf"
                             className="inline-flex items-center justify-center rounded-md text-xs font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3"
                         >
                             <Download size={14} className="mr-2" />
                             Skylight CodeMark
                         </a>
                         <a 
-                            href="/CodeMark Roof Windows.pdf" 
-                            download="CodeMark Roof Windows.pdf"
+                            href="/CodeMark Roof Window NZ.pdf" 
+                            download="CodeMark Roof Window NZ.pdf"
                             className="inline-flex items-center justify-center rounded-md text-xs font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3"
                         >
                             <Download size={14} className="mr-2" />

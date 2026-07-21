@@ -1017,33 +1017,51 @@ export default function ArchitectSelector() {
                                         {/* Technical CAD SVG Schematic */}
                                         <div className="bg-neutral-50 rounded-lg p-4 border flex items-center justify-center relative overflow-hidden h-[180px]">
                                             <div className="absolute top-2 left-2 text-[8px] bg-neutral-200 text-neutral-500 px-1 rounded uppercase tracking-wider font-bold">Profile Section</div>
-                                            <svg width="220" height="130" viewBox="0 0 220 130" className="w-full h-full max-w-[220px]">
-                                                {/* Left structural support */}
-                                                <rect x="10" y="30" width="30" height="80" rx="3" fill="#E5E5E5" stroke="#A3A3A3" strokeWidth="1.5" />
-                                                {/* Right structural support */}
-                                                <rect x="180" y="30" width="30" height="80" rx="3" fill="#E5E5E5" stroke="#A3A3A3" strokeWidth="1.5" />
-                                                
-                                                {/* Double glazing panes */}
-                                                {/* Inner Glass */}
-                                                <line x1="40" y1="55" x2="180" y2="55" stroke="#38BDF8" strokeWidth="3" />
-                                                {/* Argon gas gap */}
-                                                <line x1="40" y1="61" x2="180" y2="61" stroke="#E0F2FE" strokeWidth="4" strokeDasharray="2 3" />
-                                                {/* Outer Glass */}
-                                                <line x1="40" y1="67" x2="180" y2="67" stroke="#0284C7" strokeWidth="3" />
+                                            {(() => {
+                                                const isTriple = selection.selectedProduct?.id === 'ggu_0066' || selection.selectedProduct?.name?.toLowerCase().includes('triple');
+                                                return (
+                                                    <svg width="220" height="130" viewBox="0 0 220 130" className="w-full h-full max-w-[220px]">
+                                                        {/* Left structural support */}
+                                                        <rect x="10" y="30" width="30" height="80" rx="3" fill="#E5E5E5" stroke="#A3A3A3" strokeWidth="1.5" />
+                                                        {/* Right structural support */}
+                                                        <rect x="180" y="30" width="30" height="80" rx="3" fill="#E5E5E5" stroke="#A3A3A3" strokeWidth="1.5" />
+                                                        
+                                                        {isTriple ? (
+                                                            <>
+                                                                {/* Triple glazing panes */}
+                                                                <line x1="40" y1="52" x2="180" y2="52" stroke="#38BDF8" strokeWidth="2.5" />
+                                                                <line x1="40" y1="56" x2="180" y2="56" stroke="#E0F2FE" strokeWidth="3" strokeDasharray="2 3" />
+                                                                <line x1="40" y1="60" x2="180" y2="60" stroke="#0284C7" strokeWidth="2.5" />
+                                                                <line x1="40" y1="64" x2="180" y2="64" stroke="#E0F2FE" strokeWidth="3" strokeDasharray="2 3" />
+                                                                <line x1="40" y1="68" x2="180" y2="68" stroke="#0369A1" strokeWidth="2.5" />
 
-                                                {/* Sealing rubbers / gasket */}
-                                                <rect x="38" y="50" width="4" height="22" rx="1" fill="#171717" />
-                                                <rect x="178" y="50" width="4" height="22" rx="1" fill="#171717" />
-                                                
-                                                {/* Frame / Gaskets */}
-                                                <path d="M4 110 H216" stroke="#404040" strokeWidth="2.5" />
-                                                
-                                                {/* Labels */}
-                                                <text x="110" y="45" textAnchor="middle" fontSize="8" fill="#737373" fontFamily="sans-serif">Double-Glazed Gas Cavity</text>
-                                                <text x="110" y="85" textAnchor="middle" fontSize="9" fill="#DA251D" fontWeight="bold" fontFamily="sans-serif">
-                                                    {selectedSizeDetails.width} × {selectedSizeDetails.height} mm
-                                                </text>
-                                            </svg>
+                                                                <rect x="38" y="48" width="4" height="24" rx="1" fill="#171717" />
+                                                                <rect x="178" y="48" width="4" height="24" rx="1" fill="#171717" />
+                                                                <text x="110" y="43" textAnchor="middle" fontSize="8" fill="#737373" fontFamily="sans-serif">Triple-Glazed Gas Cavities</text>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                {/* Double glazing panes */}
+                                                                <line x1="40" y1="55" x2="180" y2="55" stroke="#38BDF8" strokeWidth="3" />
+                                                                <line x1="40" y1="61" x2="180" y2="61" stroke="#E0F2FE" strokeWidth="4" strokeDasharray="2 3" />
+                                                                <line x1="40" y1="67" x2="180" y2="67" stroke="#0284C7" strokeWidth="3" />
+
+                                                                <rect x="38" y="50" width="4" height="22" rx="1" fill="#171717" />
+                                                                <rect x="178" y="50" width="4" height="22" rx="1" fill="#171717" />
+                                                                <text x="110" y="45" textAnchor="middle" fontSize="8" fill="#737373" fontFamily="sans-serif">Double-Glazed Gas Cavity</text>
+                                                            </>
+                                                        )}
+                                                        
+                                                        {/* Frame / Gaskets */}
+                                                        <path d="M4 110 H216" stroke="#404040" strokeWidth="2.5" />
+                                                        
+                                                        {/* Labels */}
+                                                        <text x="110" y="85" textAnchor="middle" fontSize="9" fill="#DA251D" fontWeight="bold" fontFamily="sans-serif">
+                                                            {selectedSizeDetails.width} × {selectedSizeDetails.height} mm
+                                                        </text>
+                                                    </svg>
+                                                );
+                                            })()}
                                         </div>
 
                                         {/* Physical Specifications */}

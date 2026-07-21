@@ -698,9 +698,10 @@ export default function ArchitectSelector() {
                                         </div>
                                     ) : selection.roofPitch === 'pitched' && selection.openingType === 'manual' ? (
                                         <div className="space-y-6">
+                                            {/* Double Glazed Roof Windows */}
                                             <div>
                                                 <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
-                                                    <span>Roof Window Models (In-Reach Centre-Pivot GGU)</span>
+                                                    <span>Double Glazed Roof Windows (GGU 0076 Centre-Pivot)</span>
                                                 </div>
                                                 <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
                                                     {[
@@ -711,6 +712,47 @@ export default function ArchitectSelector() {
                                                         { prodId: 'ggu_0076', model: 'GGU 0076', code: 'MK08', label: '780 × 1400' },
                                                         { prodId: 'ggu_0076', model: 'GGU 0076', code: 'SK06', label: '1140 × 1180' },
                                                         { prodId: 'ggu_0076', model: 'GGU 0076', code: 'SK08', label: '1140 × 1400' },
+                                                    ].map((item) => {
+                                                        const prod = PRODUCTS.find(p => p.id === item.prodId)!;
+                                                        const isSelected = selection.selectedProduct?.id === item.prodId && selection.sizeCode === item.code;
+                                                        const dlArea = prod?.daylightArea?.[item.code] || 0;
+
+                                                        return (
+                                                            <button
+                                                                key={`${item.model}-${item.code}`}
+                                                                onClick={() => {
+                                                                    setSelection({
+                                                                        ...selection,
+                                                                        selectedProduct: prod,
+                                                                        sizeCode: item.code
+                                                                    });
+                                                                }}
+                                                                className={`p-3 rounded-lg border text-center transition-all flex flex-col justify-center items-center ${
+                                                                    isSelected 
+                                                                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20 font-semibold' 
+                                                                        : 'border-border bg-card hover:border-neutral-400'
+                                                                }`}
+                                                            >
+                                                                <span className="text-xs font-black text-foreground">{item.code}</span>
+                                                                <span className="text-[11px] text-muted-foreground mt-0.5">{item.label} mm</span>
+                                                                {dlArea > 0 && (
+                                                                    <span className="text-[9px] bg-neutral-100 text-neutral-500 px-1 py-0.5 rounded-full mt-1.5 font-medium tracking-wide">
+                                                                        {dlArea.toFixed(2)}m² Light
+                                                                    </span>
+                                                                )}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+
+                                            {/* Triple Glazed Roof Windows */}
+                                            <div>
+                                                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
+                                                    <span>Triple Glazed Roof Windows (GGU 0066 Centre-Pivot)</span>
+                                                </div>
+                                                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+                                                    {[
                                                         { prodId: 'ggu_0066', model: 'GGU 0066', code: 'CK04', label: '550 × 980' },
                                                         { prodId: 'ggu_0066', model: 'GGU 0066', code: 'MK04', label: '780 × 980' },
                                                         { prodId: 'ggu_0066', model: 'GGU 0066', code: 'MK08', label: '780 × 1400' },
@@ -736,7 +778,7 @@ export default function ArchitectSelector() {
                                                                         : 'border-border bg-card hover:border-neutral-400'
                                                                 }`}
                                                             >
-                                                                <span className="text-xs font-black text-foreground">{item.model} {item.code}</span>
+                                                                <span className="text-xs font-black text-foreground">{item.code}</span>
                                                                 <span className="text-[11px] text-muted-foreground mt-0.5">{item.label} mm</span>
                                                                 {dlArea > 0 && (
                                                                     <span className="text-[9px] bg-neutral-100 text-neutral-500 px-1 py-0.5 rounded-full mt-1.5 font-medium tracking-wide">

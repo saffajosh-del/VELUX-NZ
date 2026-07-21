@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react';
 import SkylightSelector from '@/components/SkylightSelector';
+import ArchitectSelector from '@/components/ArchitectSelector';
 
 function App() {
   const [customerMapping, setCustomerMapping] = useState<Record<string, string> | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Read customer ID from URL path (e.g., skylightselector.co.nz/bunnings)
+  // Read customer ID from URL path (e.g., skylightselector.co.nz/bunnings or /spectool)
   const pathParts = window.location.pathname.split('/').filter(Boolean);
   const customerId = pathParts.length > 0 ? pathParts[0].toLowerCase() : 'velux';
 
   useEffect(() => {
     const loadConfig = async () => {
-      if (customerId && customerId !== 'velux') {
+      if (customerId && customerId !== 'velux' && customerId !== 'spectool') {
         try {
           const mapping = await import(`./data/${customerId}-mapping.json`);
           setCustomerMapping(mapping.default || mapping);
@@ -33,7 +34,11 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/20">
-      <SkylightSelector customerId={customerId} customerMapping={customerMapping} />
+      {customerId === 'spectool' ? (
+        <ArchitectSelector />
+      ) : (
+        <SkylightSelector customerId={customerId} customerMapping={customerMapping} />
+      )}
     </div>
   );
 }

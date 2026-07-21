@@ -17,6 +17,13 @@ export interface Product {
     prices: Record<string, number>; // sizeCode -> price
     compatibleSizes: string[];
     image?: string;
+    uValue?: number;
+    shgc?: number;
+    rw?: number;
+    vlt?: number;
+    balRating?: string;
+    hailResistance?: string;
+    daylightArea?: Record<string, number>;
 }
 
 export interface Flashing {
@@ -94,7 +101,18 @@ export const PRODUCTS: Product[] = [
             'M02': 790, 'M04': 800, 'M06': 880, 'M08': 950, 'S01': 850,
             'S06': 1020
         },
-        image: '/FS-skylight.jpg'
+        image: '/FS-skylight.jpg',
+        uValue: 2.6,
+        shgc: 0.24,
+        rw: 32,
+        vlt: 0.52,
+        balRating: 'BAL-40',
+        hailResistance: 'Highest Rating',
+        daylightArea: {
+            'C01': 0.19, 'C04': 0.29, 'C08': 0.44,
+            'M02': 0.38, 'M04': 0.50, 'M06': 0.62, 'M08': 0.75,
+            'S01': 0.45, 'S06': 0.95
+        }
     },
     {
         id: 'vs',
@@ -107,7 +125,17 @@ export const PRODUCTS: Product[] = [
             'C04': 1330, 'C08': 1420, 'M02': 1440,
             'M04': 1450, 'M06': 1520, 'M08': 1610, 'S01': 1490, 'S06': 1650
         },
-        image: '/VS-skylight.jpg'
+        image: '/VS-skylight.jpg',
+        uValue: 2.6,
+        shgc: 0.24,
+        rw: 32,
+        vlt: 0.52,
+        balRating: 'BAL-40',
+        hailResistance: 'Highest Rating',
+        daylightArea: {
+            'C04': 0.29, 'C08': 0.44, 'M02': 0.38,
+            'M04': 0.50, 'M06': 0.62, 'M08': 0.75, 'S01': 0.45, 'S06': 0.95
+        }
     },
     {
         id: 'vse',
@@ -120,7 +148,17 @@ export const PRODUCTS: Product[] = [
             'C04': 2420, 'C08': 2450, 'M04': 2500,
             'M06': 2550, 'M08': 2660, 'S01': 2550, 'S06': 2690
         },
-        image: '/VSE-skylight.jpg'
+        image: '/VSE-skylight.jpg',
+        uValue: 2.6,
+        shgc: 0.24,
+        rw: 32,
+        vlt: 0.52,
+        balRating: 'BAL-40',
+        hailResistance: 'Highest Rating',
+        daylightArea: {
+            'C04': 0.29, 'C08': 0.44,
+            'M04': 0.50, 'M06': 0.62, 'M08': 0.75, 'S01': 0.45, 'S06': 0.95
+        }
     },
     {
         id: 'vss',
@@ -133,7 +171,17 @@ export const PRODUCTS: Product[] = [
             'C04': 2600, 'C08': 2630, 'M02': 2650,
             'M04': 2680, 'M06': 2730, 'M08': 2840, 'S01': 2730, 'S06': 2870
         },
-        image: '/VSS-skylight.png'
+        image: '/VSS-skylight.png',
+        uValue: 2.6,
+        shgc: 0.24,
+        rw: 32,
+        vlt: 0.52,
+        balRating: 'BAL-40',
+        hailResistance: 'Highest Rating',
+        daylightArea: {
+            'C04': 0.29, 'C08': 0.44, 'M02': 0.38,
+            'M04': 0.50, 'M06': 0.62, 'M08': 0.75, 'S01': 0.45, 'S06': 0.95
+        }
     },
     // ROOF WINDOWS
     {
@@ -146,7 +194,16 @@ export const PRODUCTS: Product[] = [
         prices: {
             'CK02': 900, 'CK04': 970, 'MK04': 1060, 'MK06': 1180, 'MK08': 1250, 'SK06': 1500, 'SK08': 1710
         },
-        image: '/GGL-roof-window.png' // Use existing window image until provided with GGU image
+        image: '/GGL-roof-window.png',
+        uValue: 1.3,
+        shgc: 0.31,
+        rw: 34,
+        vlt: 0.53,
+        balRating: 'BAL-40',
+        hailResistance: 'Highest Rating',
+        daylightArea: {
+            'CK02': 0.22, 'CK04': 0.29, 'MK04': 0.47, 'MK06': 0.59, 'MK08': 0.72, 'SK06': 0.91, 'SK08': 1.10
+        }
     },
     {
         id: 'ggu_0066',
@@ -158,7 +215,16 @@ export const PRODUCTS: Product[] = [
         prices: {
             'CK04': 1370, 'MK04': 1460, 'MK08': 1650, 'SK06': 1900
         },
-        image: '/GGL-roof-window.png'
+        image: '/GGL-roof-window.png',
+        uValue: 1.0,
+        shgc: 0.28,
+        rw: 37,
+        vlt: 0.48,
+        balRating: 'BAL-40',
+        hailResistance: 'Highest Rating',
+        daylightArea: {
+            'CK04': 0.29, 'MK04': 0.47, 'MK08': 0.72, 'SK06': 0.91
+        }
     },
     // FLAT ROOF
     {
@@ -173,7 +239,18 @@ export const PRODUCTS: Product[] = [
             '2270': 1130, '3030': 730, '3046': 880, '3055': 1090, '3072': 2010,
             '3434': 750, '3446': 950, '4622': 740, '4646': 1090, '4672': 2220
         },
-        image: '/FCM-skylight.jpg'
+        image: '/FCM-skylight.jpg',
+        uValue: 2.6,
+        shgc: 0.24,
+        rw: 32,
+        vlt: 0.52,
+        balRating: 'BAL-40',
+        hailResistance: 'Highest Rating',
+        daylightArea: {
+            '1430': 0.28, '2222': 0.33, '2230': 0.44, '2234': 0.50, '2246': 0.68,
+            '2270': 1.02, '3030': 0.58, '3046': 0.88, '3055': 1.04, '3072': 1.34,
+            '3434': 0.72, '3446': 0.98, '4622': 0.68, '4646': 1.32, '4672': 2.01
+        }
     },
     {
         id: 'vcm',
@@ -186,7 +263,17 @@ export const PRODUCTS: Product[] = [
             '2222': 1550, '2234': 1670, '2246': 1740, '3030': 1710, '3046': 1910,
             '4646': 2040
         },
-        image: '/VCM-skylight.jpg'
+        image: '/VCM-skylight.jpg',
+        uValue: 2.6,
+        shgc: 0.24,
+        rw: 32,
+        vlt: 0.52,
+        balRating: 'BAL-40',
+        hailResistance: 'Highest Rating',
+        daylightArea: {
+            '2222': 0.33, '2234': 0.50, '2246': 0.68, '3030': 0.58, '3046': 0.88,
+            '4646': 1.32
+        }
     },
     {
         id: 'vcs',
@@ -199,32 +286,44 @@ export const PRODUCTS: Product[] = [
             '2222': 2700, '2234': 2780, '2246': 2840, '3030': 2810, '3046': 2980,
             '4622': 2840, '4646': 3090
         },
-        image: '/VCS-skylight.jpg'
+        image: '/VCS-skylight.jpg',
+        uValue: 2.6,
+        shgc: 0.24,
+        rw: 32,
+        vlt: 0.52,
+        balRating: 'BAL-40',
+        hailResistance: 'Highest Rating',
+        daylightArea: {
+            '2222': 0.33, '2234': 0.50, '2246': 0.68, '3030': 0.58, '3046': 0.88,
+            '4622': 0.68, '4646': 1.32
+        }
     },
     // SUN TUNNELS
     {
         id: 'twr',
         model: 'TWR',
         name: 'Rigid Sun Tunnel (TWR)',
-        roofType: ['pitched'],
+        roofType: ['pitched', 'flat'],
         openingType: 'fixed',
         compatibleSizes: ['0K14'],
         prices: {
             '0K14': 860
         },
-        image: '/TWR-sun-tunnel.jpg'
+        image: '/TWR-sun-tunnel.jpg',
+        daylightArea: { '0K14': 0.10 }
     },
     {
         id: 'twf',
         model: 'TWF',
         name: 'Flexible Sun Tunnel (TWF)',
-        roofType: ['pitched'],
+        roofType: ['pitched', 'flat'],
         openingType: 'fixed',
         compatibleSizes: ['0K14'],
         prices: {
             '0K14': 610
         },
-        image: '/TWF-sun-tunnel.jpg'
+        image: '/TWF-sun-tunnel.jpg',
+        daylightArea: { '0K14': 0.10 }
     },
     {
         id: 'tcr',
@@ -236,7 +335,8 @@ export const PRODUCTS: Product[] = [
         prices: {
             '014': 980
         },
-        image: '/TCR-sun-tunnel.jpg'
+        image: '/TCR-sun-tunnel.jpg',
+        daylightArea: { '014': 0.10 }
     }
 ];
 

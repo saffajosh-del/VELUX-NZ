@@ -126,16 +126,6 @@ export default function ArchitectSelector() {
         return Array.from(types);
     }, [stepFilteredProducts]);
 
-    // Final list of products available for size selection
-    const finalProductsList = useMemo(() => {
-        return stepFilteredProducts.filter(p => {
-            if (selection.openingType && p.openingType !== selection.openingType) {
-                return false;
-            }
-            return true;
-        });
-    }, [stepFilteredProducts, selection.openingType]);
-
     // Sizes source for the selected product
     const availableSizes = useMemo(() => {
         if (!selection.selectedProduct) return [];
@@ -617,7 +607,7 @@ export default function ArchitectSelector() {
                                                 onClick={() => {
                                                     const prod = (selection.productCategory === 'sun-tunnel' || (selection.roofPitch === 'pitched' && op.id === 'manual'))
                                                         ? null
-                                                        : (finalProductsList.find(p => p.openingType === op.id) || null);
+                                                        : (stepFilteredProducts.find(p => p.openingType === op.id) || null);
                                                     setSelection({
                                                         ...selection,
                                                         openingType: op.id as any,
@@ -994,10 +984,21 @@ export default function ArchitectSelector() {
                                         </div>
                                     </div>
                                     <CardContent className="p-5 space-y-5">
-                                        {/* Technical CAD SVG Schematic */}
                                         <div className="bg-neutral-50 rounded-lg p-4 border flex items-center justify-center relative overflow-hidden h-[180px]">
                                             <div className="absolute top-2 left-2 text-[8px] bg-neutral-200 text-neutral-500 px-1 rounded uppercase tracking-wider font-bold">Profile Section</div>
-                                            {(() => {
+                                            {['FCM', 'VCM', 'VCS'].includes(selection.selectedProduct.model.toUpperCase()) ? (
+                                                <img 
+                                                    src="/FCM%20VCM%20VCS.png" 
+                                                    alt="FCM VCM VCS Profile Section" 
+                                                    className="max-h-full max-w-full object-contain"
+                                                />
+                                            ) : ['FS', 'VS', 'VSE', 'VSS'].includes(selection.selectedProduct.model.toUpperCase()) ? (
+                                                <img 
+                                                    src="/FS%20VS%20VSE.png" 
+                                                    alt="FS VS VSE Profile Section" 
+                                                    className="max-h-full max-w-full object-contain"
+                                                />
+                                            ) : (() => {
                                                 const isTriple = selection.selectedProduct?.id === 'ggu_0066' || selection.selectedProduct?.name?.toLowerCase().includes('triple');
                                                 return (
                                                     <svg width="220" height="130" viewBox="0 0 220 130" className="w-full h-full max-w-[220px]">

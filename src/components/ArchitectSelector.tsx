@@ -636,9 +636,14 @@ export default function ArchitectSelector() {
                         {selection.openingType && (selection.selectedProduct || selection.productCategory === 'sun-tunnel' || (selection.roofPitch === 'pitched' && selection.openingType === 'manual')) && (
                             <Card className="border border-border shadow-sm">
                                 <CardHeader className="pb-4">
-                                    <CardTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
-                                        <span className="w-6 h-6 rounded-full bg-neutral-100 flex items-center justify-center text-xs text-neutral-500 font-bold border">4</span>
-                                        {selection.productCategory === 'sun-tunnel' ? 'Sun Tunnel Model Selection' : 'Standard Sizing Selection'}
+                                    <CardTitle className="text-lg font-bold flex flex-wrap items-center gap-x-2 gap-y-1 text-foreground">
+                                        <span className="w-6 h-6 rounded-full bg-neutral-100 flex items-center justify-center text-xs text-neutral-500 font-bold border shrink-0">4</span>
+                                        <span>{selection.productCategory === 'sun-tunnel' ? 'Sun Tunnel Model Selection' : 'Standard Sizing Selection'}</span>
+                                        {selection.productCategory === 'skylight' && selection.roofPitch === 'flat' && selection.openingType === 'fixed' && (
+                                            <span className="text-xs font-normal italic text-muted-foreground ml-1">
+                                                (FCM Skylights can be used in portrait or landscape orientation)
+                                            </span>
+                                        )}
                                     </CardTitle>
                                     <CardDescription>
                                         {selection.productCategory === 'sun-tunnel' 
@@ -647,6 +652,23 @@ export default function ArchitectSelector() {
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
+                                    {selection.productCategory === 'skylight' && (
+                                        <div className="flex items-center justify-center bg-white p-4 rounded-xl border border-neutral-100 h-52 max-w-xl mx-auto mb-6">
+                                            {selection.roofPitch === 'flat' ? (
+                                                <img 
+                                                    src="/FCM%20VCM%20VCS.png" 
+                                                    alt="Flat Roof Skylight Models" 
+                                                    className="h-44 w-auto object-contain"
+                                                />
+                                            ) : selection.roofPitch === 'pitched' ? (
+                                                <img 
+                                                    src="/FS%20VS%20VSE.png" 
+                                                    alt="Pitched Roof Skylight Models" 
+                                                    className="h-44 w-auto object-contain"
+                                                />
+                                            ) : null}
+                                        </div>
+                                    )}
                                     {selection.productCategory === 'sun-tunnel' ? (
                                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                             {[
@@ -880,8 +902,7 @@ export default function ArchitectSelector() {
                                     {/* Blinds selection */}
                                     <div className="space-y-3">
                                         <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">INTEGRATED LIGHT SHIELD / BLINDS</label>
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                            {/* None Option */}
+                                        <div className="flex flex-col sm:flex-row gap-3">
                                             <button
                                                 onClick={() => {
                                                     let newAccessories = [...selection.selectedAccessories];
@@ -890,14 +911,16 @@ export default function ArchitectSelector() {
                                                     }
                                                     setSelection({ ...selection, selectedBlind: null, selectedAccessories: newAccessories });
                                                 }}
-                                                className={`p-3.5 rounded-lg border text-left transition-all ${
+                                                className={`p-3 rounded-lg border text-left transition-all flex items-center justify-between gap-3 w-full sm:w-auto shrink-0 ${
                                                     selection.selectedBlind === null 
                                                         ? 'border-primary bg-primary/5 ring-2 ring-primary/20' 
                                                         : 'border-border bg-card hover:border-neutral-400'
                                                 }`}
                                             >
-                                                <h4 className="font-bold text-xs">No Shade Integrated</h4>
-                                                <p className="text-[10px] text-muted-foreground mt-1 leading-normal">Maximize daylight penetration.</p>
+                                                <div className="flex-1">
+                                                    <h4 className="font-bold text-xs">No Shade Integrated</h4>
+                                                    <p className="text-[10px] text-muted-foreground mt-1 leading-normal">Maximize daylight penetration.</p>
+                                                </div>
                                             </button>
                                             
                                             {BLINDS.filter(b => b.id !== 'zil' && b.compatibleModels.includes(selection.selectedProduct!.model) && b.prices[selection.sizeCode!] !== undefined).map(blind => {
@@ -912,16 +935,27 @@ export default function ArchitectSelector() {
                                                             }
                                                             setSelection({ ...selection, selectedBlind: blind.id, selectedAccessories: newAccessories });
                                                         }}
-                                                        className={`p-3.5 rounded-lg border text-left transition-all ${
+                                                        className={`p-3 rounded-lg border text-left transition-all flex items-center justify-between gap-3 flex-1 ${
                                                             isSelected 
                                                                 ? 'border-primary bg-primary/5 ring-2 ring-primary/20' 
                                                                 : 'border-border bg-card hover:border-neutral-400'
                                                         }`}
                                                     >
-                                                        <h4 className="font-bold text-xs">{blind.name} {blind.subtitle}</h4>
-                                                        <p className="text-[10px] text-muted-foreground mt-1 leading-normal">
-                                                            {blind.type === 'darkening' ? 'Honeycomb cell blocks 99% light.' : 'Filters glaring light.'}
-                                                        </p>
+                                                        <div className="flex-1">
+                                                            <h4 className="font-bold text-xs">{blind.name} {blind.subtitle}</h4>
+                                                            <p className="text-[10px] text-muted-foreground mt-1 leading-normal">
+                                                                {blind.type === 'darkening' ? 'Honeycomb cell blocks 99% light.' : 'Filters glaring light.'}
+                                                            </p>
+                                                        </div>
+                                                        {blind.image && (
+                                                            <div className="w-[84px] h-[84px] rounded border border-neutral-100 bg-white p-0.5 shrink-0 overflow-hidden flex items-center justify-center">
+                                                                <img 
+                                                                    src={blind.image} 
+                                                                    alt={blind.name} 
+                                                                    className="w-full h-full object-cover rounded-sm"
+                                                                />
+                                                            </div>
+                                                        )}
                                                     </button>
                                                 );
                                             })}
@@ -985,17 +1019,10 @@ export default function ArchitectSelector() {
                                     </div>
                                     <CardContent className="p-5 space-y-5">
                                         <div className="bg-neutral-50 rounded-lg p-4 border flex items-center justify-center relative overflow-hidden h-[180px]">
-                                            <div className="absolute top-2 left-2 text-[8px] bg-neutral-200 text-neutral-500 px-1 rounded uppercase tracking-wider font-bold">Profile Section</div>
-                                            {['FCM', 'VCM', 'VCS'].includes(selection.selectedProduct.model.toUpperCase()) ? (
+                                            {selection.selectedProduct.image ? (
                                                 <img 
-                                                    src="/FCM%20VCM%20VCS.png" 
-                                                    alt="FCM VCM VCS Profile Section" 
-                                                    className="max-h-full max-w-full object-contain"
-                                                />
-                                            ) : ['FS', 'VS', 'VSE', 'VSS'].includes(selection.selectedProduct.model.toUpperCase()) ? (
-                                                <img 
-                                                    src="/FS%20VS%20VSE.png" 
-                                                    alt="FS VS VSE Profile Section" 
+                                                    src={selection.selectedProduct.image} 
+                                                    alt={`${selection.selectedProduct.name} Detail`} 
                                                     className="max-h-full max-w-full object-contain"
                                                 />
                                             ) : (() => {
@@ -1050,7 +1077,7 @@ export default function ArchitectSelector() {
                                             <div className="text-neutral-500 font-bold uppercase tracking-wider text-[10px] pb-1 border-b">Performance Matrix</div>
                                             
                                             <div className="flex justify-between py-1 border-b border-neutral-100">
-                                                <span className="text-neutral-500 flex items-center gap-1">R-Value (Total System) <span title="Thermal Heat Transfer Coefficient (lower is better)"><Info size={10} className="text-neutral-400" /></span></span>
+                                                <span className="text-neutral-500 flex items-center gap-1">R-Value (Total System) <span title="Measured at 0 degree pitch."><Info size={10} className="text-neutral-400" /></span></span>
                                                 <span className="font-bold text-foreground">{selection.selectedProduct.uValue} W/m²K</span>
                                             </div>
                                             

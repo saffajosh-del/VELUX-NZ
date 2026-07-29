@@ -48,7 +48,7 @@ interface ScheduleItem {
     height: number;
     openingType: string;
     glazing: string;
-    uValue: number;
+    rValue: number | string;
     shgc: number;
     rw: number;
     vlt: number;
@@ -58,6 +58,13 @@ interface ScheduleItem {
     notes: string;
     price: number;
 }
+
+const formatRValue = (val: string | number | undefined) => {
+    if (val === undefined || val === null) return 'X';
+    const num = parseFloat(String(val));
+    if (isNaN(num)) return String(val);
+    return String(num);
+};
 
 export default function ArchitectSelector() {
     // Tab state
@@ -85,6 +92,7 @@ export default function ArchitectSelector() {
     
     // Alert / Toast state
     const [toastMessage, setToastMessage] = useState<string | null>(null);
+    const [zoomedImage, setZoomedImage] = useState<string | null>(null);
 
     // Show temporary toast notification
     const triggerToast = (msg: string) => {
@@ -250,7 +258,7 @@ export default function ArchitectSelector() {
             height: size.height,
             openingType: prod.openingType.charAt(0).toUpperCase() + prod.openingType.slice(1),
             glazing: glazingType,
-            uValue: prod.uValue || 2.6,
+            rValue: formatRValue(prod.rValues?.[selection.sizeCode]),
             shgc: prod.shgc || 0.24,
             rw: prod.rw || 32,
             vlt: prod.vlt || 0.52,
@@ -315,7 +323,7 @@ export default function ArchitectSelector() {
             const dlArea = item.product.daylightArea?.[item.sizeCode] || 0;
             const accessoriesStr = item.accessories.join(" | ");
             
-            let row = `"${item.mark}","${item.product.model}","${item.product.name}","${item.sizeCode}",${item.width},${item.height},${dlArea},"${item.glazing}",${item.uValue},${item.shgc},${item.rw},"${item.balRating}","${accessoriesStr}",${item.qty},"${item.notes.replace(/"/g, '""')}"`;
+            let row = `"${item.mark}","${item.product.model}","${item.product.name}","${item.sizeCode}",${item.width},${item.height},${dlArea},"${item.glazing}",${item.rValue},${item.shgc},${item.rw},"${item.balRating}","${accessoriesStr}",${item.qty},"${item.notes.replace(/"/g, '""')}"`;
             if (showPricing) row += `,${item.price},${item.price * item.qty}`;
             csvContent += row + "\n";
         });
@@ -343,7 +351,7 @@ export default function ArchitectSelector() {
         schedule.forEach(item => {
             const dlArea = item.product.daylightArea?.[item.sizeCode] || 0;
             const accs = item.accessories.length > 0 ? item.accessories.join(", ") : "None";
-            let row = `| **${item.mark}** | ${item.product.model} | ${item.sizeCode} | ${item.width} x ${item.height} mm | ${dlArea} m² | ${item.glazing} | ${item.uValue} | ${item.shgc} | ${item.rw} dB | ${item.balRating} | ${accs} | ${item.qty} | ${item.notes} |`;
+            let row = `| **${item.mark}** | ${item.product.model} | ${item.sizeCode} | ${item.width} x ${item.height} mm | ${dlArea} m² | ${item.glazing} | ${item.rValue} | ${item.shgc} | ${item.rw} dB | ${item.balRating} | ${accs} | ${item.qty} | ${item.notes} |`;
             if (showPricing) row += ` $${item.price.toFixed(2)} | $${(item.price * item.qty).toFixed(2)} |`;
             md += row + "\n";
         });
@@ -658,13 +666,15 @@ export default function ArchitectSelector() {
                                                 <img 
                                                     src="/FCM%20VCM%20VCS.png" 
                                                     alt="Flat Roof Skylight Models" 
-                                                    className="h-44 w-auto object-contain"
+                                                    onClick={() => setZoomedImage('/FCM%20VCM%20VCS.png')}
+                                                    className="h-44 w-auto object-contain cursor-zoom-in hover:brightness-95 transition-all"
                                                 />
                                             ) : selection.roofPitch === 'pitched' ? (
                                                 <img 
                                                     src="/FS%20VS%20VSE.png" 
                                                     alt="Pitched Roof Skylight Models" 
-                                                    className="h-44 w-auto object-contain"
+                                                    onClick={() => setZoomedImage('/FS%20VS%20VSE.png')}
+                                                    className="h-44 w-auto object-contain cursor-zoom-in hover:brightness-95 transition-all"
                                                 />
                                             ) : null}
                                         </div>
@@ -1078,7 +1088,7 @@ export default function ArchitectSelector() {
                                             
                                             <div className="flex justify-between py-1 border-b border-neutral-100">
                                                 <span className="text-neutral-500 flex items-center gap-1">R-Value (Total System) <span title="Measured at 0 degree pitch."><Info size={10} className="text-neutral-400" /></span></span>
-                                                <span className="font-bold text-foreground">{selection.selectedProduct.uValue} W/m²K</span>
+                                                <span className="font-bold text-foreground">{formatRValue(selection.selectedProduct.rValues?.[selection.sizeCode!])}</span>
                                             </div>
                                             
                                             <div className="flex justify-between py-1 border-b border-neutral-100">
@@ -1268,7 +1278,7 @@ export default function ArchitectSelector() {
                                                 </td>
                                                 {/* R / SHGC */}
                                                 <td className="p-4 text-center text-neutral-700 whitespace-nowrap">
-                                                    {item.uValue} / {item.shgc}
+                                                    {item.rValue} / {item.shgc}
                                                 </td>
                                                 {/* Acoustic Rw */}
                                                 <td className="p-4 text-center text-neutral-700 font-medium">
@@ -1343,6 +1353,41 @@ export default function ArchitectSelector() {
                     </CardContent>
                 </Card>
             )}
+        <AnimatePresence>
+                {zoomedImage && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setZoomedImage(null)}
+                        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 cursor-zoom-out"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="relative max-w-4xl max-h-[90vh] bg-white p-2 rounded-xl shadow-2xl overflow-hidden flex flex-col items-center"
+                        >
+                            <img
+                                src={zoomedImage}
+                                alt="Dimensions Diagram"
+                                className="max-w-full max-h-[80vh] object-contain rounded-lg cursor-default"
+                            />
+                            <button
+                                onClick={() => setZoomedImage(null)}
+                                className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors focus:outline-none"
+                                aria-label="Close modal"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

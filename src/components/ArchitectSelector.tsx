@@ -428,7 +428,7 @@ export default function ArchitectSelector() {
                         exit={{ opacity: 0, y: -20 }}
                         className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-neutral-900 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 text-sm font-medium"
                     >
-                        <Info size={16} className="text-primary" />
+                        <Check size={16} className="text-green-500" />
                         {toastMessage}
                     </motion.div>
                 )}

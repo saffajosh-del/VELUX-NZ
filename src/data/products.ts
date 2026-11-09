@@ -71,21 +71,21 @@ export const PITCHED_SIZES: Size[] = [
 ];
 
 export const FLAT_SIZES: Size[] = [
-    { code: '1430', width: 375, height: 780, label: '375 x 780' },
-    { code: '2222', width: 575, height: 575, label: '575 x 575' },
-    { code: '2230', width: 575, height: 780, label: '575 x 780' },
-    { code: '2234', width: 575, height: 880, label: '575 x 880' },
-    { code: '2246', width: 575, height: 1185, label: '575 x 1185' },
-    { code: '2270', width: 575, height: 1795, label: '575 x 1795' },
-    { code: '3030', width: 780, height: 780, label: '780 x 780' },
-    { code: '3046', width: 780, height: 1185, label: '780 x 1185' },
-    { code: '3055', width: 895, height: 1527, label: '895 x 1527' },
-    { code: '3072', width: 895, height: 1959, label: '895 x 1959' },
-    { code: '3434', width: 880, height: 880, label: '880 x 880' },
-    { code: '3446', width: 880, height: 1185, label: '880 x 1185' },
-    { code: '4622', width: 1185, height: 574, label: '1185 x 574' },
-    { code: '4646', width: 1185, height: 1185, label: '1185 x 1185' },
-    { code: '4672', width: 1302, height: 1959, label: '1302 x 1959' },
+    { code: '1430', width: 460, height: 870, label: '460 x 870' },
+    { code: '2222', width: 665, height: 665, label: '665 x 665' },
+    { code: '2230', width: 665, height: 870, label: '665 x 870' },
+    { code: '2234', width: 665, height: 970, label: '665 x 970' },
+    { code: '2246', width: 665, height: 1275, label: '665 x 1275' },
+    { code: '2270', width: 665, height: 1885, label: '665 x 1885' },
+    { code: '3030', width: 870, height: 870, label: '870 x 870' },
+    { code: '3046', width: 870, height: 1275, label: '870 x 1275' },
+    { code: '3055', width: 870, height: 1505, label: '870 x 1505' },
+    { code: '3072', width: 870, height: 1935, label: '870 x 1935' },
+    { code: '3434', width: 970, height: 970, label: '970 x 970' },
+    { code: '3446', width: 970, height: 1275, label: '970 x 1275' },
+    { code: '4622', width: 1275, height: 665, label: '1275 x 665' },
+    { code: '4646', width: 1275, height: 1275, label: '1275 x 1275' },
+    { code: '4672', width: 1275, height: 1935, label: '1275 x 1935' },
 ];
 
 export const ROOF_WINDOW_SIZES: Size[] = [

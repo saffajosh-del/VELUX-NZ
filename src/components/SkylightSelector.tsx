@@ -291,7 +291,11 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
 
     const handleProductTypeSelect = (id: string) => {
         setItemQuantities({});
-        setSelection(prev => ({ ...prev, productCategory: id as any }));
+        setSelection(prev => ({
+            ...prev,
+            productCategory: id as any,
+            roofPitch: id === 'roof-window' ? 'pitched' : null,
+        }));
         nextStep('material');
     };
 
@@ -325,8 +329,17 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
 
     const handleMaterialSelect = (id: string) => {
         const mappedType = id === 'tiled-corrugated' ? 'tiled' : id === 'slate-shingle' ? 'slate' : 'wide-metal';
-        setSelection(prev => ({ ...prev, roofMaterial: id as any, roofType: mappedType }));
-        nextStep('pitch');
+        setSelection(prev => ({
+            ...prev,
+            roofMaterial: id as any,
+            roofType: mappedType,
+            roofPitch: prev.productCategory === 'roof-window' ? 'pitched' : prev.roofPitch,
+        }));
+        if (selection.productCategory === 'roof-window') {
+            nextStep('roof-window-model');
+        } else {
+            nextStep('pitch');
+        }
     };
 
     const handleSunTunnelTypeSelect = (type: 'rigid' | 'flexible') => {
@@ -508,10 +521,17 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
         </div>
     );
 
+    const availablePitchOptions = useMemo(() => {
+        if (selection.productCategory === 'roof-window') {
+            return PITCH_OPTIONS.filter(opt => opt.id === 'pitched');
+        }
+        return PITCH_OPTIONS;
+    }, [selection.productCategory]);
+
     const renderPitchStep = () => (
         <div className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {PITCH_OPTIONS.map((opt) => (
+                {availablePitchOptions.map((opt) => (
                     <button
                         key={opt.id}
                         onClick={() => handlePitchSelect(opt.id)}
@@ -745,7 +765,7 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
                 <ul className="text-sm text-muted-foreground space-y-1 list-disc pl-4">
                     <li>Top control bar</li>
                     <li>General thermal control, standard acoustic needs</li>
-                    <li>Suitable for pitch 15°-90°</li>
+                    <li><strong className="text-foreground">Suitable for pitch 15 - 90 degrees</strong></li>
                 </ul>
             </button>
             <button
@@ -763,7 +783,7 @@ export default function SkylightSelector({ customerId = 'velux', customerMapping
                 <ul className="text-sm text-muted-foreground space-y-1 list-disc pl-4">
                     <li>Top control bar</li>
                     <li>Ideal for extreme climates, high-noise environments, and ultra high energy ratings</li>
-                    <li>Suitable for pitch 15°-90°</li>
+                    <li><strong className="text-foreground">Suitable for pitch 15 - 90 degrees</strong></li>
                 </ul>
             </button>
         </div>
